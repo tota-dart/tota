@@ -1,0 +1,3 @@
+---
+site: ['invalid', 'format']
+'key-does-not-exist': true

@@ -1,0 +1,16 @@
+name: tota
+description: A fast and simple framework for generating static sites.
+author: izolate <izolate@gmail.com>
+homepage: https://github.com/izolate/tota
+documentation: https://github.com/izolate/tota/blob/master/README.md
+environment:
+  sdk: '>=2.3.0 <3.0.0'
+dependencies:
+  path: ^1.6.2
+  front_matter: ^1.0.1
+  markdown: ^2.0.3
+  mustache: ^1.1.1
+  slugify: ^1.0.0
+  intl: ^0.15.8
+dev_dependencies:
+  test: ^1.6.4

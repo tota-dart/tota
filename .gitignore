@@ -11,3 +11,10 @@ pubspec.lock
 # Directory created by dartdoc
 # If you don't generate documentation locally you can remove this line.
 doc/api/
+
+# TODO: remove before publish
+public/
+posts/
+pages/
+templates/
+config.yaml
