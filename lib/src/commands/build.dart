@@ -15,7 +15,7 @@ class BuildCommand extends Command {
   /// Prints a message acknowledging the generated [file].
   void logFile(File file) {
     var path = file.path.replaceAll(p.join('${p.current}/'), '');
-    print('[INFO] Generated: ${path}');
+    print('INFO Generated: ${path}');
   }
 
   void run() async {
