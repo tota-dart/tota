@@ -2,9 +2,12 @@ import 'dart:io';
 import 'package:path/path.dart' as p;
 import 'package:front_matter/front_matter.dart' as fm;
 import 'package:markdown/markdown.dart';
+import 'package:mustache/mustache.dart';
 import 'config.dart';
 import 'exceptions.dart';
 import 'utils.dart';
+
+const _defaultHtmlTemplate = 'base.mustache';
 
 class Generator {
   final Config config;
@@ -69,16 +72,49 @@ class Generator {
           HeaderWithIdSyntax(),
           TableSyntax(),
         ]);
-        // TODO use mustache HTML template.
+
+        // Get HTML template, fallback to default template.
+        var templateFileName = parsed.data.containsKey('template')
+            ? parsed.data['template']
+            : _defaultHtmlTemplate;
+        var templateFile = File(p.join(
+            p.current, this.config.directory['templates'], templateFileName));
+        if (!await templateFile.exists()) {
+          throw TotaException('HTML template not found: `$templateFileName`');
+        }
+        var template = Template(await templateFile.readAsString(),
+            partialResolver: this.getTemplatePartial);
+
+        // Create the destination file.
         var file = File(
             p.join(this.publicDir.path, p.setExtension(filePath, '.html')));
+
         // Create sub-directories before writing the file.
         await Directory(p.join(this.publicDir.path, p.dirname(filePath)))
             .create(recursive: true);
-        await file.writeAsString(fileContent);
+        await file.writeAsString(template.renderString({
+          'content': fileContent,
+          'data': parsed.data,
+        }));
         generated.add(file);
       }
     }
     return generated;
+  }
+
+  /// Resolves the template partial.
+  Template getTemplatePartial(String name) {
+    var partialDir = Directory(
+        p.join(p.current, this.config.directory['templates'], '_partials'));
+    String partialText = '';
+    for (var file in partialDir.listSync(recursive: true)) {
+      if (file is File && p.basenameWithoutExtension(file.path) == name) {
+        partialText = (file as File).readAsStringSync();
+      }
+    }
+    if (partialText.isEmpty) {
+      throw TotaException('HTML template partial not found: `$name`');
+    }
+    return Template(partialText);
   }
 }
