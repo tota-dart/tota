@@ -7,19 +7,20 @@ import 'utils.dart';
 import 'pages.dart';
 import 'posts.dart';
 
-/// Runs the main build sequence for the generator.
-Future<Map<String, dynamic>> build({bool deploy = false}) async {
-  // Load site config file.
-  var config = Config(File(p.join(p.current, 'config.yaml')));
-  var result = <String, dynamic>{};
+/// Page type assigned to posts.
+const postsPageType = 'posts';
 
-  // Build all pages.
-  var pages = Pages(config);
-  result['pages'] = await pages.build();
+/// Runs the generator, creating static files.
+Future<List<File>> build({bool deploy = false}) async {
+  final Config config = Config(File(p.join(p.current, 'config.yaml')));
 
-  // Build all posts.
-  var posts = Posts(config);
-  result['posts'] = await posts.build();
+  Pages pages = Pages(config);
+  Pages posts = Posts(config);
+
+  List<File> result = [
+    ...await pages.build(),
+    ...await posts.build(),
+  ];
 
   if (deploy) {
     // TODO
@@ -30,13 +31,16 @@ Future<Map<String, dynamic>> build({bool deploy = false}) async {
 }
 
 Future<File> create(String title, {String type}) async {
-  // Load site config file.
-  var config = Config(File(p.join(p.current, 'config.yaml')));
+  final Config config = Config(File(p.join(p.current, 'config.yaml')));
 
-  Pages pages = Pages(config);
-  if (type == 'posts') {
-    pages = Posts(config);
+  Pages resource;
+  switch (type) {
+    case postsPageType:
+      resource = Posts(config);
+      break;
+    default:
+      resource = Pages(config);
   }
 
-  return pages.create(title);
+  return resource.create(title);
 }

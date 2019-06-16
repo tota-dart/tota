@@ -20,10 +20,14 @@ class BuildCommand extends Command {
 
   void run() async {
     try {
+      List<File> files = await tota.build(deploy: argResults['deploy']);
+      files.forEach(this.logFile);
+      /*
       Map<String, dynamic> result =
           await tota.build(deploy: argResults['deploy']);
       result['pages']?.forEach(this.logFile);
       result['posts']?.forEach(this.logFile);
+      */
     } catch (e) {
       print(e);
     }
