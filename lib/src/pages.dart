@@ -19,7 +19,7 @@ class Pages {
         Directory(p.join(p.current, this.config.directory['public']));
   }
 
-  /// Creates an initial page file from a starting template.
+  /// Scaffolds a page file from a starting template.
   ///
   /// Creates a new [file] in the pages directory with optional [metadata]
   /// (front matter) and body [content].
@@ -35,7 +35,7 @@ class Pages {
     return file.writeAsString(content);
   }
 
-  /// Creates a new page file with desired [title].
+  /// Scaffolds a new page file with desired [title].
   Future<File> create(String title) async {
     // Slugify title to create a file name.
     var fileName = p.setExtension(slugify(title), '.md');
@@ -57,15 +57,16 @@ class Pages {
   /// separate front matter and body content. Converts body from Markdown
   /// to HTML, and saves the resulting file in the public directory.
   Future<List<File>> buildDirectory(Directory directory) async {
-    List<File> files = List();
+    List<File> files = [];
     await for (var entity in directory.list(recursive: true)) {
       // Limit the process to Markdown files only.
       if (entity is File &&
           p.extension(entity.path) == _markdownFileExtension) {
         // Read the file and parse front matter & content.
         var parsed = await fm.parseFile(entity.path);
-        // Ignore files that aren't public.
-        if (parsed.data.containsKey('public') && parsed.data['public']) {
+        // Ignore files that aren't public (or have no front matter).
+        if ((parsed.data?.containsKey('public') ?? false) &&
+            parsed.data['public']) {
           // Calculate a relative file path with source directory as root.
           var filePath = entity.path.replaceAll('${this.sourceDir.path}/', '');
           // Convert body content from markdown to HTML.

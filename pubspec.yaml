@@ -12,5 +12,7 @@ dependencies:
   mustache: ^1.1.1
   slugify: ^1.0.0
   intl: ^0.15.8
+  args: ^1.5.2
 dev_dependencies:
   test: ^1.6.4
+executables: tota
