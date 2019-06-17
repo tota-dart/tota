@@ -12,9 +12,9 @@ class Config {
     if (!this._file.existsSync()) {
       throw fileNotFoundException(this._file.path);
     }
-    var content = loadYaml(this._file.readAsStringSync());
 
     try {
+      var content = loadYaml(this._file.readAsStringSync());
       this.site = Map<String, dynamic>.from(content['site']);
       this.directory = Map<String, dynamic>.from(content['directory']);
     } catch (e) {
