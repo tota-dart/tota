@@ -21,4 +21,7 @@ class Config {
       throw TotaException('configuration file is invalid.');
     }
   }
+
+  /// Returns the config file path.
+  String get path => this._file.path;
 }

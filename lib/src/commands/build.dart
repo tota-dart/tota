@@ -1,35 +1,47 @@
 import 'dart:io';
 import 'package:args/command_runner.dart';
 import 'package:path/path.dart' as p;
+import 'package:cli_util/cli_logging.dart';
 import '../../tota.dart' as tota;
+import '../config.dart';
 
 class BuildCommand extends Command {
   final name = 'build';
   final description = 'Generates static files.';
 
   BuildCommand() {
-    // Add option to deploy after generation.
-    argParser.addFlag('deploy', abbr: 'd');
-  }
-
-  /// Prints a message acknowledging the generated [file].
-  void logFile(File file) {
-    var path = file.path.replaceAll(p.join('${p.current}/'), '');
-    print('INFO Generated: ${path}');
+    argParser.addFlag('verbose',
+        abbr: 'v', negatable: false, help: 'Enable verbose logging.');
+    argParser.addFlag('deploy',
+        abbr: 'd', negatable: false, help: 'Deploy after build finishes.');
   }
 
   void run() async {
+    Logger logger =
+        argResults['verbose'] ? Logger.verbose() : Logger.standard();
+
     try {
-      List<File> files = await tota.build(deploy: argResults['deploy']);
-      files.forEach(this.logFile);
-      /*
-      Map<String, dynamic> result =
-          await tota.build(deploy: argResults['deploy']);
-      result['pages']?.forEach(this.logFile);
-      result['posts']?.forEach(this.logFile);
-      */
+      final Config config = tota.loadConfig();
+      logger.stdout('Loaded config file.');
+      logger.trace(config.path);
+
+      // Delete existing public directory.
+      var publicDir = Directory(p.join(p.current, config.directory['public']));
+      await publicDir.delete(recursive: true);
+
+      Progress buildProgress = logger.progress('Generating static files');
+      List<File> files = await tota.build(config);
+      files.forEach((file) => logger.trace(file.path));
+      buildProgress.finish(showTiming: true);
+
+      if (argResults['deploy']) {
+        logger.stdout('Deployment has not yet been implemented.');
+      }
+
+      logger.stdout('All ${logger.ansi.emphasized('done')}.');
+      logger.flush();
     } catch (e) {
-      print(e);
+      logger.stderr(logger.ansi.error(e.message));
     }
   }
 }

@@ -10,29 +10,24 @@ import 'posts.dart';
 /// Page type assigned to posts.
 const postsPageType = 'posts';
 
-/// Runs the generator, creating static files.
-Future<List<File>> build({bool deploy = false}) async {
-  final Config config = Config(File(p.join(p.current, 'config.yaml')));
+/// Loads the config file.
+Config loadConfig({String fileName = 'config.yaml'}) =>
+    Config(File(p.join(p.current, fileName)));
 
+/// Runs the generator, creating static files.
+Future<List<File>> build(Config config) async {
   Pages pages = Pages(config);
-  Pages posts = Posts(config);
+  Posts posts = Posts(config);
 
   List<File> result = [
     ...await pages.build(),
     ...await posts.build(),
   ];
 
-  if (deploy) {
-    // TODO
-    print('TODO deploy');
-  }
-
   return result;
 }
 
-Future<File> create(String title, {String type}) async {
-  final Config config = Config(File(p.join(p.current, 'config.yaml')));
-
+Future<File> create(Config config, String title, {String type}) async {
   Pages resource;
   switch (type) {
     case postsPageType:
