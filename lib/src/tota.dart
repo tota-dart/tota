@@ -1,8 +1,5 @@
 library tota;
 
-import 'dart:io';
-import 'package:path/path.dart' as p;
-import 'utils.dart';
 import 'pages.dart';
 import 'posts.dart';
 

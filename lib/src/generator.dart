@@ -118,7 +118,7 @@ Template getTemplatePartial(String name) {
   var partial = '';
   for (var file in directory.listSync(recursive: true)) {
     if (file is File && p.basenameWithoutExtension(file.path) == name) {
-      partial = (file as File).readAsStringSync();
+      partial = file.readAsStringSync();
     }
   }
   return Template(partial);
