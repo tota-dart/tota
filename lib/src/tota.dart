@@ -7,7 +7,7 @@ import 'pages.dart';
 import 'posts.dart';
 
 /// Page type assigned to posts.
-const postsPageType = 'posts';
+const postsPageType = 'post';
 
 /// Runs the generator, creating static files.
 Future<List<Uri>> build() async {
@@ -22,8 +22,7 @@ Future<List<Uri>> build() async {
   return result;
 }
 
-/*
-Future<Uri> create(String title, {String type}) async {
+Future<Uri> create(String title, {String type, bool force}) async {
   Pages resource;
   switch (type) {
     case postsPageType:
@@ -33,6 +32,5 @@ Future<Uri> create(String title, {String type}) async {
       resource = Pages();
   }
 
-  return resource.create(title);
+  return resource.create(title, force: force);
 }
-*/

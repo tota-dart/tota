@@ -8,114 +8,118 @@ import 'utils.dart';
 
 const _defaultHtmlTemplate = 'base.mustache';
 
-abstract class Generator {
-  /// Directory containing generated files.
-  static Uri get publicDir => Uri.directory(
-      p.join(p.current, getenv('PUBLIC_DIR', fallback: 'public')));
-
-  /// Scaffolds a source file from a starting template.
-  ///
-  /// Creates a new [file] in the source directory with optional [metadata]
-  /// (front matter) and body [content].
-  static Future<Uri> createSourceFile(File file,
-      {Map<String, dynamic> metadata, String content = ''}) async {
-    if (await file.exists()) {
+/// Scaffolds a source file from a starting template.
+///
+/// Creates a new [file] in the source directory with optional [metadata]
+/// (front matter) and body [content].
+Future<Uri> createSourceFile(Uri fileUri,
+    {Map<String, dynamic> metadata,
+    String content = '',
+    bool force = false}) async {
+  File file = File.fromUri(fileUri);
+  if (await file.exists()) {
+    if (force) {
+      // Overwrite file.
+      await file.delete();
+    } else {
       throw fileAlreadyExistsException(file.path);
     }
-    // Prefix content with front matter.
-    if (metadata?.isNotEmpty ?? false) {
-      content = '${createFrontMatter(metadata)}\n\n$content';
-    }
-    await file.writeAsString(content);
-    return Uri.file(file.path);
   }
-
-  /// Lists all files in a directory.
-  ///
-  /// Returns a list of all Markdown files in a [directory] (recursively).
-  /// Optionally filters out files that don't match a file [extension].
-  static Future<List<Uri>> listDirectory(Directory directory,
-      {String extension}) async {
-    var entities = await directory.list(recursive: true).toList();
-    var files = entities.whereType<File>().toList();
-    if (extension != null) {
-      files.removeWhere((file) => p.extension(file.path) != extension);
-    }
-    return files.map((file) => Uri.file(file.path)).toList();
+  // Prefix content with front matter.
+  if (metadata?.isNotEmpty ?? false) {
+    content = '${createFrontMatter(metadata)}\n\n$content';
   }
+  await file.writeAsString(content);
+  return fileUri;
+}
 
-  /// Generates HTML files for all [files] in a list.
-  ///
-  /// Parses file contents to separate front matter and body.
-  /// Converts Markdown body to HTML, then renders an HTML file
-  /// in the public directory using the desired HTML template.
-  static Future<List<Uri>> generateHtmlFiles(
-      {List<Uri> files, Uri sourceDir, publicDir}) async {
-    List<Uri> generated = [];
-    for (var srcFile in files) {
-      // Read the file and parse front matter & content.
-      fm.FrontMatterDocument parsed;
-      try {
-        parsed = await fm.parseFile(srcFile.path);
-      } catch (e) {
-        throw TotaException('${e.message} `${srcFile.path}`');
+/// Lists all files in a directory.
+///
+/// Returns a list of all Markdown files in a [directory] (recursively).
+/// Optionally filters out files that don't match a file [extension].
+Future<List<Uri>> listDirectory(Directory directory, {String extension}) async {
+  var entities = await directory.list(recursive: true).toList();
+  var files = entities.whereType<File>().toList();
+  if (extension != null) {
+    files.removeWhere((file) => p.extension(file.path) != extension);
+  }
+  return files.map((file) => Uri.file(file.path)).toList();
+}
+
+/// Generates HTML files for all [files] in a list.
+///
+/// Parses file contents to separate front matter and body.
+/// Converts Markdown body to HTML, then renders an HTML file
+/// in the public directory using the desired HTML template.
+Future<List<Uri>> generateHtmlFiles(
+    {List<Uri> files, Uri sourceDir, publicDir}) async {
+  List<Uri> generated = [];
+  for (var srcFile in files) {
+    // Read the file and parse front matter & content.
+    fm.FrontMatterDocument parsed;
+    try {
+      parsed = await fm.parseFile(srcFile.path);
+    } catch (e) {
+      throw TotaException('${e.message} `${srcFile.path}`');
+    }
+
+    // Ignore files that aren't public (or just have no front matter).
+    if ((parsed.data?.containsKey('public') ?? false) &&
+        parsed.data['public']) {
+      // Convert body content from markdown to HTML.
+      var fileContent = markdownToHtml(parsed.content, inlineSyntaxes: [
+        InlineHtmlSyntax(),
+      ], blockSyntaxes: [
+        HeaderWithIdSyntax(),
+        TableSyntax(),
+      ]);
+
+      // Get HTML template, fallback to default template.
+      var templateFileName = parsed.data.containsKey('template')
+          ? parsed.data['template']
+          : _defaultHtmlTemplate;
+      var templateFile =
+          File(p.join(p.current, getenv('TEMPLATES_DIR'), templateFileName));
+      if (!await templateFile.exists()) {
+        throw TotaException('HTML template not found: `$templateFileName`');
       }
+      var template = Template(await templateFile.readAsString(),
+          partialResolver: getTemplatePartial);
 
-      // Ignore files that aren't public (or just have no front matter).
-      if ((parsed.data?.containsKey('public') ?? false) &&
-          parsed.data['public']) {
-        // Convert body content from markdown to HTML.
-        var fileContent = markdownToHtml(parsed.content, inlineSyntaxes: [
-          InlineHtmlSyntax(),
-        ], blockSyntaxes: [
-          HeaderWithIdSyntax(),
-          TableSyntax(),
-        ]);
+      // Create a file URI relative to source directory, in order to
+      // generate the same directory structure in the public directory.
+      var fileName = p.relative(p.setExtension(srcFile.path, '.html'),
+          from: sourceDir.path);
+      Uri fileUri = Uri.file(p.join(publicDir.path, fileName));
 
-        // Get HTML template, fallback to default template.
-        var templateFileName = parsed.data.containsKey('template')
-            ? parsed.data['template']
-            : _defaultHtmlTemplate;
-        var templateFile =
-            File(p.join(p.current, getenv('TEMPLATES_DIR'), templateFileName));
-        if (!await templateFile.exists()) {
-          throw TotaException('HTML template not found: `$templateFileName`');
-        }
-        var template = Template(await templateFile.readAsString(),
-            partialResolver: Generator.getTemplatePartial);
+      // Create nested directories in public directory before writing the file.
+      await Directory(p.join(publicDir.path, p.dirname(fileUri.path)))
+          .create(recursive: true);
 
-        // Create a file URI relative to source directory, in order to
-        // generate the same directory structure in the public directory.
-        var fileName = p.relative(p.setExtension(srcFile.path, '.html'),
-            from: sourceDir.path);
-        Uri fileUri = Uri.file(p.join(publicDir.path, fileName));
-
-        // Create nested directories in public directory before writing the file.
-        await Directory(p.join(publicDir.path, p.dirname(fileUri.path)))
-            .create(recursive: true);
-
-        // Write to destination file.
-        File file = File.fromUri(fileUri);
-        await file.writeAsString(template.renderString({
-          'content': fileContent,
-          'data': parsed.data,
-        }));
-        generated.add(fileUri);
-      }
+      // Write to destination file.
+      File file = File.fromUri(fileUri);
+      await file.writeAsString(template.renderString({
+        'content': fileContent,
+        'data': parsed.data,
+      }));
+      generated.add(fileUri);
     }
-    return generated;
   }
+  return generated;
+}
 
-  /// Resolves the template partial.
-  static Template getTemplatePartial(String name) {
-    var directory =
-        Directory(p.join(p.current, getenv('TEMPLATES_DIR'), '_partials'));
-    var partial = '';
-    for (var file in directory.listSync(recursive: true)) {
-      if (file is File && p.basenameWithoutExtension(file.path) == name) {
-        partial = (file as File).readAsStringSync();
-      }
+/// Resolves the template for a partial.
+///
+/// Recursively searches the `_partials` directory for a file
+/// that matches the partial [name].
+Template getTemplatePartial(String name) {
+  var directory =
+      Directory(p.join(p.current, getenv('TEMPLATES_DIR'), '_partials'));
+  var partial = '';
+  for (var file in directory.listSync(recursive: true)) {
+    if (file is File && p.basenameWithoutExtension(file.path) == name) {
+      partial = (file as File).readAsStringSync();
     }
-    return Template(partial);
   }
+  return Template(partial);
 }

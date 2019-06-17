@@ -6,7 +6,8 @@ import 'package:tota/cli.dart';
 
 void main(List<String> args) {
   dotenv.load();
-  var runner = new CommandRunner('tota', 'Static site generator.')
+  var runner = CommandRunner('tota', 'Static site generator.')
     ..addCommand(BuildCommand())
+    ..addCommand(NewCommand())
     ..run(args);
 }
