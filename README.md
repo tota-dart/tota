@@ -7,8 +7,8 @@ Early stages, not intended for production use just yet.
 
 ## Install
 
-Pre-requisites:
-  * Install [Dart](https://dart.dev/get-dart) `2.3+`
+#### Pre-requisites:
+  * Install **[Dart](https://dart.dev/get-dart)** 2.3+
 
 Then, activate the package globally:
 
@@ -18,21 +18,21 @@ pub global activate tota
 
 ## Quick start
 
-### Setup your site
+#### Setup your site
 
 ```bash
 tota init blog
 cd blog
 ```
 
-### Create a new post
+#### Create a new post
 
 ```bash
 tota new "Hello, world!"
 vim pages/hello-world.md
 ```
 
-### Generate static files
+#### Generate static files
 
 ```bash
 tota build
