@@ -1,18 +1,21 @@
 import 'dart:io';
 import 'package:path/path.dart' as p;
 import 'pages.dart';
-import 'config.dart';
-
-const _defaultDirName = 'posts';
+import 'utils.dart';
 
 class Posts extends Pages {
-  Posts(Config config) : super(config) {
-    var dirName = this.config.directory.containsKey('posts')
-        ? this.config.directory['posts']
-        : _defaultDirName;
-    this.sourceDir = Directory(p.join(p.current, dirName));
-    // The posts are nested in a sub-directory inside the public one,
-    // with the same name as the source directory.
-    this.publicDir = Directory(p.join(this.publicDir.path, dirName));
-  }
+  /// Dirname of the posts directory.
+  final String _dirname = getenv('POSTS_DIR', fallback: 'posts');
+
+  /// Gets the posts directory URI.
+  @override
+  Uri get sourceDir => Uri.directory(p.join(p.current, this._dirname));
+
+  /// Gets the public directory URI.
+  ///
+  /// Adds an additional sub-directory path to the public directory,
+  /// so that posts are nested inside the public directory.
+  @override
+  Uri get publicDir => Uri.directory(p.join(
+      p.current, getenv('PUBLIC_DIR', fallback: 'pages'), this._dirname));
 }

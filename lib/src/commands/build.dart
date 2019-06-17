@@ -3,7 +3,7 @@ import 'package:args/command_runner.dart';
 import 'package:path/path.dart' as p;
 import 'package:cli_util/cli_logging.dart';
 import '../../tota.dart' as tota;
-import '../config.dart';
+import '../utils.dart';
 
 class BuildCommand extends Command {
   final name = 'build';
@@ -21,16 +21,14 @@ class BuildCommand extends Command {
         argResults['verbose'] ? Logger.verbose() : Logger.standard();
 
     try {
-      final Config config = tota.loadConfig();
-      logger.stdout('Loaded config file.');
-      logger.trace(config.path);
-
       // Delete existing public directory.
-      var publicDir = Directory(p.join(p.current, config.directory['public']));
-      await publicDir.delete(recursive: true);
+      var publicDir = Directory(p.join(p.current, getenv('PUBLIC_DIR')));
+      if (await publicDir.exists()) {
+        await publicDir.delete(recursive: true);
+      }
 
       Progress buildProgress = logger.progress('Generating static files');
-      List<File> files = await tota.build(config);
+      List<Uri> files = await tota.build();
       files.forEach((file) => logger.trace(file.path));
       buildProgress.finish(showTiming: true);
 

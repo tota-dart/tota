@@ -3,7 +3,9 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:path/path.dart' as p;
 import 'package:intl/intl.dart' show DateFormat;
+import 'package:dotenv/dotenv.dart' as dotenv;
 import 'package:slugify/slugify.dart';
+import 'tota_exception.dart';
 
 /// Deletes all files in a [directory] that match a file [extension] (optional).
 Future<void> emptyDirectory(Directory directory, {String extension}) async {
@@ -29,4 +31,13 @@ String createFrontMatter(Map<String, dynamic> data) {
   }
   var fm = data.entries.map((entry) => '${entry.key}: ${entry.value}');
   return "---\n${fm.join('\n')}\n---";
+}
+
+/// Gets environment variable with [prefix].
+String getenv(String key, {String fallback, String prefix = 'TOTA_'}) {
+  var value = dotenv.env['$prefix${key ?? fallback}'];
+  if (value == null) {
+    throw TotaException('configuration variable not found: `$prefix$key`');
+  }
+  return value;
 }

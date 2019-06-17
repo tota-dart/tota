@@ -2,7 +2,6 @@ library tota;
 
 import 'dart:io';
 import 'package:path/path.dart' as p;
-import 'config.dart';
 import 'utils.dart';
 import 'pages.dart';
 import 'posts.dart';
@@ -10,16 +9,12 @@ import 'posts.dart';
 /// Page type assigned to posts.
 const postsPageType = 'posts';
 
-/// Loads the config file.
-Config loadConfig({String fileName = 'config.yaml'}) =>
-    Config(File(p.join(p.current, fileName)));
-
 /// Runs the generator, creating static files.
-Future<List<File>> build(Config config) async {
-  Pages pages = Pages(config);
-  Posts posts = Posts(config);
+Future<List<Uri>> build() async {
+  Pages pages = Pages();
+  Posts posts = Posts();
 
-  List<File> result = [
+  List<Uri> result = [
     ...await pages.build(),
     ...await posts.build(),
   ];
@@ -27,15 +22,17 @@ Future<List<File>> build(Config config) async {
   return result;
 }
 
-Future<File> create(Config config, String title, {String type}) async {
+/*
+Future<Uri> create(String title, {String type}) async {
   Pages resource;
   switch (type) {
     case postsPageType:
-      resource = Posts(config);
+      resource = Posts();
       break;
     default:
-      resource = Pages(config);
+      resource = Pages();
   }
 
   return resource.create(title);
 }
+*/
