@@ -1,5 +1,13 @@
 ## Quick start
 
+### Install
+
+Activate the package globally:
+
+```bash
+pub global activate tota
+```
+
 ### Setup your site
 
 ```bash
