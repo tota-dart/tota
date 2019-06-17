@@ -104,17 +104,14 @@ class Generator {
 
   /// Resolves the template partial.
   Template getTemplatePartial(String name) {
-    var partialDir = Directory(
+    var directory = Directory(
         p.join(p.current, this.config.directory['templates'], '_partials'));
-    String partialText = '';
-    for (var file in partialDir.listSync(recursive: true)) {
+    var partial = '';
+    for (var file in directory.listSync(recursive: true)) {
       if (file is File && p.basenameWithoutExtension(file.path) == name) {
-        partialText = (file as File).readAsStringSync();
+        partial = (file as File).readAsStringSync();
       }
     }
-    if (partialText.isEmpty) {
-      throw TotaException('HTML template partial not found: `$name`');
-    }
-    return Template(partialText);
+    return Template(partial);
   }
 }
