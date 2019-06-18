@@ -88,9 +88,9 @@ void main() {
       withTempDir((path) {
         dirs.root = path;
 
-        // Create test files
-        var partialsPath = p.join(path, '_partials');
-        Directory(partialsPath)..createSync();
+        // Create test files.
+        var partialsPath = p.join(path, 'templates', '_partials');
+        Directory(partialsPath)..createSync(recursive: true);
 
         File(p.join(partialsPath, 'foo.mustache'))
           ..writeAsStringSync('<h1>{{ foo }}</h1>');
@@ -101,11 +101,11 @@ void main() {
     });
 
     test('loads nested file in directory', () {
-      withTempDir((path) async {
+      withTempDir((path) {
         dirs.root = path;
 
-        // Create test files
-        var partialsPath = p.join(path, '_partials', 'nested');
+        // Create test files.
+        var partialsPath = p.join(path, 'templates', '_partials', 'nested');
         Directory(partialsPath)..createSync(recursive: true);
 
         File(p.join(partialsPath, 'foo.mustache'))
@@ -113,6 +113,72 @@ void main() {
 
         var partial = getTemplatePartial('foo');
         expect(partial.renderString({'foo': 'bar'}), equals('<h1>bar</h1>'));
+      });
+    });
+  });
+
+  group('generateHtmlFiles', () {
+    var testIds = <String>['foo', 'bar', 'baz', 'qux'];
+
+    setUp(() {
+      dirs.allowEmpty = true;
+    });
+
+    tearDown(() {
+      dirs.reset();
+    });
+
+    /// Creates test source files common to every test in group.
+    Map<String, dynamic> setupTest(String tempDir) {
+      // Create source directory
+      var pagesDir = Directory(p.join(tempDir, 'pages'))..createSync();
+      // Generate test pages.
+      var files = List<Uri>.generate(testIds.length,
+          (i) => Uri.file(p.join(pagesDir.path, 'test-${testIds[i]}.md')));
+      // Write file contents.
+      files.asMap().forEach((i, uri) {
+        var file = File.fromUri(uri);
+        file.writeAsStringSync('---\n'
+            'test: "${testIds[i]}"\n'
+            'public: true\n'
+            '---\n'
+            '# Hello, world!');
+      });
+
+      // Create test template file.
+      var templatesDir = Uri.directory(p.join(tempDir, 'templates'));
+      Directory(p.join(templatesDir.path, '_partials'))
+        ..createSync(recursive: true);
+      File(p.join(templatesDir.path, 'base.mustache'))
+        ..writeAsStringSync('{{ content }}');
+
+      return <String, dynamic>{
+        'files': files,
+        'pagesDir': Uri.directory(pagesDir.path),
+        'templatesDir': templatesDir,
+        'publicDir': Uri.directory(p.join(tempDir, 'public'))
+      };
+    }
+
+    test('generates files', () {
+      return withTempDir((path) async {
+        dirs.root = path;
+
+        var t = setupTest(path);
+        var result = await generateHtmlFiles(
+            files: t['files'],
+            sourceDir: t['pagesDir'],
+            publicDir: t['publicDir']);
+
+        expect(result.length, testIds.length);
+
+        result.asMap().forEach((i, fileUri) async {
+          var file = File.fromUri(fileUri);
+          // File exists.
+          expect(file.exists(), completion(equals(true)));
+          // File name is expected.
+          expect(p.basename(fileUri.path), equals('test-${testIds[i]}.html'));
+        });
       });
     });
   });
