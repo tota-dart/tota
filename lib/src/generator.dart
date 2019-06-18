@@ -78,8 +78,7 @@ Future<List<Uri>> generateHtmlFiles(
       var templateFileName = parsed.data.containsKey('template')
           ? parsed.data['template']
           : _defaultHtmlTemplate;
-      var templateFile =
-          File(p.join(p.current, getenv('TEMPLATES_DIR'), templateFileName));
+      var templateFile = File(p.join(dirs.templates.path, templateFileName));
       if (!await templateFile.exists()) {
         throw TotaException('HTML template not found: `$templateFileName`');
       }
@@ -113,9 +112,9 @@ Future<List<Uri>> generateHtmlFiles(
 /// Recursively searches the `_partials` directory for a file
 /// that matches the partial [name].
 Template getTemplatePartial(String name) {
-  var directory =
-      Directory(p.join(p.current, getenv('TEMPLATES_DIR'), '_partials'));
+  var directory = Directory(p.join(dirs.templates.path, '_partials'));
   var partial = '';
+  print(directory);
   for (var file in directory.listSync(recursive: true)) {
     if (file is File && p.basenameWithoutExtension(file.path) == name) {
       partial = file.readAsStringSync();

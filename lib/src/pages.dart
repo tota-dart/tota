@@ -7,12 +7,10 @@ const _markdownFileExtension = '.md';
 
 class Pages {
   /// Gets the pages directory URI.
-  Uri get sourceDir =>
-      Uri.directory(p.join(p.current, getenv('PAGES_DIR', fallback: 'pages')));
+  Uri get sourceDir => dirs.pages;
 
   /// Gets the public directory URI.
-  Uri get publicDir =>
-      Uri.directory(p.join(p.current, getenv('PUBLIC_DIR', fallback: 'pages')));
+  Uri get publicDir => dirs.public;
 
   /// Scaffolds a new page file with desired [title].
   Future<Uri> create(String title, {bool force}) async {

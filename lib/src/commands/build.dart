@@ -22,7 +22,7 @@ class BuildCommand extends Command {
 
     try {
       // Delete existing public directory.
-      var publicDir = Directory(p.join(p.current, getenv('PUBLIC_DIR')));
+      var publicDir = Directory.fromUri(dirs.public);
       if (await publicDir.exists()) {
         await publicDir.delete(recursive: true);
       }
