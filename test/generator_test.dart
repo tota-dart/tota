@@ -41,4 +41,36 @@ void main() {
       });
     });
   });
+
+  group('listDirectory()', () {
+    test('lists all files in a directory', () {
+      withTempDir((path) async {
+        var nums = List<int>.generate(5, (i) => i);
+
+        // Create test files in temp dir.
+        for (var num in nums) {
+          var file = File(p.join(path, 'test-$num.md'));
+          await file.writeAsString('foo');
+        }
+
+        var result = await listDirectory(Uri.directory(path));
+        expect(result.length, equals(nums.length));
+      });
+    });
+
+    test('only returns files that match a file extension', () {
+      withTempDir((path) async {
+        var filenames = ['foo.md', 'bar.md', 'virus.exe'];
+
+        // Create test files in temp dir.
+        for (var name in filenames) {
+          var file = File(p.join(path, name));
+          await file.writeAsString('foo');
+        }
+
+        var result = await listDirectory(Uri.directory(path), extension: '.md');
+        expect(result.length, equals(filenames.length - 1));
+      });
+    });
+  });
 }
