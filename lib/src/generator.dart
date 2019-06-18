@@ -37,8 +37,8 @@ Future<Uri> createSourceFile(Uri fileUri,
 ///
 /// Returns a list of all Markdown files in a [directory] (recursively).
 /// Optionally filters out files that don't match a file [extension].
-Future<List<Uri>> listDirectory(Directory directory, {String extension}) async {
-  var entities = await directory.list(recursive: true).toList();
+Future<List<Uri>> listDirectory(Uri uri, {String extension}) async {
+  var entities = await Directory.fromUri(uri).list(recursive: true).toList();
   var files = entities.whereType<File>().toList();
   if (extension != null) {
     files.removeWhere((file) => p.extension(file.path) != extension);

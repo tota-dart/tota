@@ -31,8 +31,8 @@ class Pages {
   }
 
   /// Lists all Markdown files in the pages directory.
-  Future<List<Uri>> list() => listDirectory(Directory.fromUri(this.sourceDir),
-      extension: _markdownFileExtension);
+  Future<List<Uri>> list() =>
+      listDirectory(this.sourceDir, extension: _markdownFileExtension);
 
   /// Builds the files in the pages directory.
   Future<List<Uri>> build() async => generateHtmlFiles(
