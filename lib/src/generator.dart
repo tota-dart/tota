@@ -113,6 +113,9 @@ Future<List<Uri>> generateHtmlFiles(
 /// that matches the partial [name].
 Template getTemplatePartial(String name) {
   var directory = Directory(p.join(dirs.templates.path, '_partials'));
+  if (!directory.existsSync()) {
+    throw TotaException("template partials directory doesn't exist");
+  }
   var partial = '';
   for (var file in directory.listSync(recursive: true)) {
     if (file is File && p.basenameWithoutExtension(file.path) == name) {
