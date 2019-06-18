@@ -114,7 +114,6 @@ Future<List<Uri>> generateHtmlFiles(
 Template getTemplatePartial(String name) {
   var directory = Directory(p.join(dirs.templates.path, '_partials'));
   var partial = '';
-  print(directory);
   for (var file in directory.listSync(recursive: true)) {
     if (file is File && p.basenameWithoutExtension(file.path) == name) {
       partial = file.readAsStringSync();

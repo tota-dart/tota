@@ -1,13 +1,14 @@
 import 'dart:io';
 import 'package:test/test.dart';
 import 'package:path/path.dart' as p;
+import 'package:tota/src/utils.dart' show dirs;
 import 'package:tota/tota.dart';
 import 'package:tota/src/generator.dart';
 import 'utils.dart';
 
 void main() {
-  group('createSourceFile()', () {
-    test('creates a new source file', () {
+  group('createSourceFile', () {
+    test('creates a new file', () {
       withTempDir((path) async {
         var file = File(p.join(path, 'foo.md'));
 
@@ -20,7 +21,7 @@ void main() {
       });
     });
 
-    test('throws error if file already exists', () {
+    test('throws error if file exists at file path', () {
       withTempDir((path) async {
         var file = File(p.join(path, 'foo.md'));
         await file.writeAsString('foo');
@@ -42,15 +43,15 @@ void main() {
     });
   });
 
-  group('listDirectory()', () {
+  group('listDirectory', () {
     test('lists all files in a directory', () {
       withTempDir((path) async {
         var nums = List<int>.generate(5, (i) => i);
 
         // Create test files in temp dir.
         for (var num in nums) {
-          var file = File(p.join(path, 'test-$num.md'));
-          await file.writeAsString('foo');
+          await File(p.join(path, 'test-$num.md'))
+            ..writeAsString('foo');
         }
 
         var result = await listDirectory(Uri.directory(path));
@@ -58,18 +59,60 @@ void main() {
       });
     });
 
-    test('only returns files that match a file extension', () {
+    test("omits files that don't match a file extension", () {
       withTempDir((path) async {
         var filenames = ['foo.md', 'bar.md', 'virus.exe'];
 
         // Create test files in temp dir.
         for (var name in filenames) {
-          var file = File(p.join(path, name));
-          await file.writeAsString('foo');
+          await File(p.join(path, name))
+            ..writeAsString('foo');
         }
 
         var result = await listDirectory(Uri.directory(path), extension: '.md');
         expect(result.length, equals(filenames.length - 1));
+      });
+    });
+  });
+
+  group('getTemplatePartial', () {
+    setUp(() {
+      dirs.allowEmpty = true;
+    });
+
+    tearDown(() {
+      dirs.reset();
+    });
+
+    test('loads file in directory', () {
+      withTempDir((path) {
+        dirs.root = path;
+
+        // Create test files
+        var partialsPath = p.join(path, '_partials');
+        Directory(partialsPath)..createSync();
+
+        File(p.join(partialsPath, 'foo.mustache'))
+          ..writeAsStringSync('<h1>{{ foo }}</h1>');
+
+        var partial = getTemplatePartial('foo');
+        expect(partial.renderString({'foo': 'bar'}), equals('<h1>bar</h1>'));
+      });
+    });
+
+    test('loads nested file in directory', () {
+      withTempDir((path) async {
+        dirs.root = path;
+
+        // Create test files
+        var partialsPath = p.join(path, '_partials', 'nested');
+        Directory(partialsPath)..createSync(recursive: true);
+
+        File(p.join(partialsPath, 'foo.mustache'))
+          ..writeAsStringSync('<h1>{{ foo }}</h1>');
+
+        var partial = getTemplatePartial('foo');
+        expect(partial.renderString({'foo': 'bar'}), equals('<h1>bar</h1>'));
       });
     });
   });
