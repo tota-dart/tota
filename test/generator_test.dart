@@ -128,43 +128,11 @@ void main() {
       dirs.reset();
     });
 
-    /// Creates test source files common to every test in group.
-    Map<String, dynamic> setupTest(String tempDir) {
-      // Create source directory
-      var pagesDir = Directory(p.join(tempDir, 'pages'))..createSync();
-      // Generate test pages.
-      var files = List<Uri>.generate(testIds.length,
-          (i) => Uri.file(p.join(pagesDir.path, 'test-${testIds[i]}.md')));
-      // Write file contents.
-      files.asMap().forEach((i, uri) {
-        var file = File.fromUri(uri);
-        file.writeAsStringSync('---\n'
-            'test: "${testIds[i]}"\n'
-            'public: true\n'
-            '---\n'
-            '# Hello, world!');
-      });
-
-      // Create test template file.
-      var templatesDir = Uri.directory(p.join(tempDir, 'templates'));
-      Directory(p.join(templatesDir.path, '_partials'))
-        ..createSync(recursive: true);
-      File(p.join(templatesDir.path, 'base.mustache'))
-        ..writeAsStringSync('{{ content }}');
-
-      return <String, dynamic>{
-        'files': files,
-        'pagesDir': Uri.directory(pagesDir.path),
-        'templatesDir': templatesDir,
-        'publicDir': Uri.directory(p.join(tempDir, 'public'))
-      };
-    }
-
-    test('generates files', () {
+    test('generates HTML files', () {
       return withTempDir((path) async {
         dirs.root = path;
 
-        var t = setupTest(path);
+        var t = createTestFiles(path, testIds);
         var result = await generateHtmlFiles(
             files: t['files'],
             sourceDir: t['pagesDir'],
