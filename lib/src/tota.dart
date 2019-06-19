@@ -1,13 +1,21 @@
 library tota;
 
+import 'dart:io';
+import 'utils.dart';
 import 'pages.dart';
 import 'posts.dart';
 
 /// Page type assigned to posts.
-const postsPageType = 'post';
+const postPageType = 'post';
 
 /// Runs the generator, creating static files.
 Future<List<Uri>> build() async {
+  // Delete existing public directory to start from scratch.
+  var publicDir = Directory.fromUri(dirs.public);
+  if (await publicDir.exists()) {
+    await publicDir.delete(recursive: true);
+  }
+
   Pages pages = Pages();
   Posts posts = Posts();
 
@@ -19,10 +27,14 @@ Future<List<Uri>> build() async {
   return result;
 }
 
+/// Creates a new source file.
+///
+/// The default [type] of resource to create is "page". Will throw an
+/// exception if file already exists, but [force] will override this.
 Future<Uri> create(String title, {String type, bool force}) async {
   Pages resource;
   switch (type) {
-    case postsPageType:
+    case postPageType:
       resource = Posts();
       break;
     default:
