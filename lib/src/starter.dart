@@ -12,22 +12,6 @@ class Starter {
 
   Starter(this.targetUri);
 
-  // Removes a directory inside the target directory.
-  Future<void> _removeDir(String name) async {
-    var subDir = Directory(p.join(targetUri.path, name));
-    if (await subDir.exists()) {
-      subDir.delete(recursive: true);
-    }
-  }
-
-  // Renames a file inside the target directory.
-  Future<void> _renameFile(String from, to) async {
-    var file = File(p.join(targetUri.path, from));
-    if (await file.exists()) {
-      await file.rename(p.join(targetUri.path, to));
-    }
-  }
-
   /// Clones the directory from GitHub.
   Future<void> clone() async {
     var results = await Process.run('git',
@@ -40,5 +24,21 @@ class Starter {
     await _removeDir('.git');
     // Create config file.
     await _renameFile('.env.example', '.env');
+  }
+
+  // Removes a directory inside the target directory.
+  Future<void> _removeDir(String name) async {
+    var subDir = Directory(p.join(targetUri.path, name));
+    if (await subDir.exists()) {
+      await subDir.delete(recursive: true);
+    }
+  }
+
+  // Renames a file inside the target directory.
+  Future<void> _renameFile(String from, to) async {
+    var file = File(p.join(targetUri.path, from));
+    if (await file.exists()) {
+      await file.rename(p.join(targetUri.path, to));
+    }
   }
 }
