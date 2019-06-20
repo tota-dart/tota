@@ -5,7 +5,7 @@ import '../tota_exception.dart';
 
 class NewCommand extends Command {
   final name = 'new';
-  final description = 'Creates a new page.';
+  final description = 'Create a new page.';
 
   NewCommand() {
     argParser.addOption('type',

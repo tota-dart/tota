@@ -7,7 +7,7 @@ import '../config.dart';
 
 class BuildCommand extends Command {
   final name = 'build';
-  final description = 'Generates static files.';
+  final description = 'Generate static files.';
 
   BuildCommand() {
     argParser.addFlag('verbose',
