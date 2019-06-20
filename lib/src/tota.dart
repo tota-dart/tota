@@ -23,8 +23,7 @@ Future<void> init(Uri directory) async {
     }
   }
 
-  Starter starter = Starter(directory);
-  return await starter.clone();
+  return await clone(directory);
 }
 
 /// Runs the generator, creating static files.
