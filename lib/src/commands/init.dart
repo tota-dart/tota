@@ -2,7 +2,6 @@ import 'package:args/command_runner.dart';
 import 'package:cli_util/cli_logging.dart';
 import 'package:path/path.dart' as p;
 import '../../tota.dart' as tota;
-import '../tota_exception.dart';
 
 class InitCommand extends Command {
   final name = 'init';
