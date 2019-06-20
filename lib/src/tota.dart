@@ -1,17 +1,20 @@
 library tota;
 
 import 'dart:io';
-import 'utils.dart';
+import 'config.dart';
 import 'pages.dart';
 import 'posts.dart';
 
 /// Page type assigned to posts.
 const postPageType = 'post';
 
+/// Initializes a new project.
+Future<void> init() async {}
+
 /// Runs the generator, creating static files.
 Future<List<Uri>> build() async {
   // Delete existing public directory to start from scratch.
-  var publicDir = Directory.fromUri(dirs.public);
+  var publicDir = Directory.fromUri(config.publicDir);
   if (await publicDir.exists()) {
     await publicDir.delete(recursive: true);
   }

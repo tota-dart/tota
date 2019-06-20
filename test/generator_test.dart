@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:test/test.dart';
 import 'package:path/path.dart' as p;
-import 'package:tota/src/utils.dart' show dirs;
+import 'package:tota/src/config.dart';
 import 'package:tota/tota.dart';
 import 'package:tota/src/generator.dart';
 import 'utils.dart';
@@ -77,16 +77,12 @@ void main() {
 
   group('getTemplatePartial', () {
     setUp(() {
-      dirs.allowEmpty = true;
-    });
-
-    tearDown(() {
-      dirs.reset();
+      config.allowEmpty = true;
     });
 
     test('loads file in directory', () {
       withTempDir((path) {
-        dirs.root = path;
+        config.rootDir = Uri.directory(path);
 
         // Create test files.
         var partialsPath = p.join(path, 'templates', '_partials');
@@ -102,7 +98,7 @@ void main() {
 
     test('loads nested file in directory', () {
       withTempDir((path) {
-        dirs.root = path;
+        config.rootDir = Uri.directory(path);
 
         // Create test files.
         var partialsPath = p.join(path, 'templates', '_partials', 'nested');
@@ -121,16 +117,12 @@ void main() {
     var testIds = <String>['foo', 'bar', 'baz', 'qux'];
 
     setUp(() {
-      dirs.allowEmpty = true;
-    });
-
-    tearDown(() {
-      dirs.reset();
+      config.allowEmpty = true;
     });
 
     test('generates HTML files', () {
       return withTempDir((path) async {
-        dirs.root = path;
+        config.rootDir = Uri.directory(path);
 
         var t = createTestFiles(path, testIds);
         var result = await generateHtmlFiles(

@@ -4,6 +4,7 @@ import 'package:front_matter/front_matter.dart' as fm;
 import 'package:markdown/markdown.dart';
 import 'package:mustache/mustache.dart';
 import 'tota_exception.dart';
+import 'config.dart';
 import 'utils.dart';
 
 const _defaultHtmlTemplate = 'base.mustache';
@@ -78,7 +79,8 @@ Future<List<Uri>> generateHtmlFiles(
       var templateFileName = parsed.data.containsKey('template')
           ? parsed.data['template']
           : _defaultHtmlTemplate;
-      var templateFile = File(p.join(dirs.templates.path, templateFileName));
+      var templateFile =
+          File(p.join(config.templatesDir.path, templateFileName));
       if (!await templateFile.exists()) {
         throw TotaException('HTML template not found: `$templateFileName`');
       }
@@ -112,7 +114,7 @@ Future<List<Uri>> generateHtmlFiles(
 /// Recursively searches the `_partials` directory for a file
 /// that matches the partial [name].
 Template getTemplatePartial(String name) {
-  var directory = Directory(p.join(dirs.templates.path, '_partials'));
+  var directory = Directory(p.join(config.templatesDir.path, '_partials'));
   if (!directory.existsSync()) {
     throw TotaException("template partials directory doesn't exist");
   }

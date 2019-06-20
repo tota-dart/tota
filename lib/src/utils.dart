@@ -41,33 +41,3 @@ String getenv(String key,
   }
   return value;
 }
-
-/// Has getters for notable directories relative to a common root.
-class _Directories {
-  /// Root directory for directories.
-  String root = p.current;
-
-  /// Toggles exceptions off (used in tests).
-  bool allowEmpty = false;
-
-  /// Resets to default options.
-  void reset() {
-    root = p.current;
-    allowEmpty = false;
-  }
-
-  /// Returns a directory URI relative to root.
-  Uri _getUri(String env, {String fallback}) => Uri.directory(
-      p.join(root, getenv(env, fallback: fallback, allowEmpty: allowEmpty)));
-
-  Uri get public => _getUri('PUBLIC_DIR', fallback: 'public');
-
-  Uri get pages => _getUri('PAGES_DIR', fallback: 'pages');
-
-  Uri get posts => _getUri('POSTS_DIR', fallback: 'posts');
-
-  Uri get templates => _getUri('TEMPLATES_DIR', fallback: 'templates');
-}
-
-/// Helper that returns URIs for notable directories.
-var dirs = _Directories();

@@ -1,16 +1,16 @@
 import 'package:path/path.dart' as p;
 import 'pages.dart';
-import 'utils.dart';
+import 'config.dart';
 
 class Posts extends Pages {
   /// The URI for the posts directory.
   @override
-  Uri sourceDir = dirs.posts;
+  Uri sourceDir = config.postsDir;
 
   /// The URI for the public directory.
   ///
   /// Adds an additional sub-directory path to the public directory,
   /// so that posts are nested inside the public directory.
   @override
-  Uri publicDir = Uri.directory(p.join(dirs.public.path, 'posts'));
+  Uri publicDir = Uri.directory(p.join(config.publicDir.path, 'posts'));
 }

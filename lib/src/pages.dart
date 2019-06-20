@@ -1,20 +1,22 @@
+import 'package:slugify/slugify.dart';
 import 'package:path/path.dart' as p;
 import 'generator.dart';
+import 'config.dart';
 import 'utils.dart';
 
 const _markdownFileExtension = '.md';
 
 class Pages {
   /// The URI for the pages directory.
-  Uri sourceDir = dirs.pages;
+  Uri sourceDir = config.pagesDir;
 
   /// The URI for the public directory.
-  Uri publicDir = dirs.public;
+  Uri publicDir = config.publicDir;
 
   /// Scaffolds a new page file with desired [title].
   Future<Uri> create(String title, {bool force}) async {
     // Slugify title to create a file name.
-    var fileName = p.setExtension(slugify(title), '.md');
+    var fileName = p.setExtension(Slugify(title), '.md');
     var fileUri = Uri.file(p.join(sourceDir.path, fileName));
     var metadata = <String, dynamic>{
       'title': title,

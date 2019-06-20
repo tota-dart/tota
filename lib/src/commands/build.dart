@@ -1,8 +1,9 @@
 import 'dart:io';
+import 'package:dotenv/dotenv.dart' as dotenv;
 import 'package:args/command_runner.dart';
 import 'package:cli_util/cli_logging.dart';
 import '../../tota.dart' as tota;
-import '../utils.dart';
+import '../config.dart';
 
 class BuildCommand extends Command {
   final name = 'build';
@@ -16,12 +17,14 @@ class BuildCommand extends Command {
   }
 
   void run() async {
+    dotenv.load();
+
     Logger logger =
         argResults['verbose'] ? Logger.verbose() : Logger.standard();
 
     try {
       // Delete existing public directory.
-      var publicDir = Directory.fromUri(dirs.public);
+      var publicDir = Directory.fromUri(config.publicDir);
       if (await publicDir.exists()) {
         await publicDir.delete(recursive: true);
       }
