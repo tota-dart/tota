@@ -17,7 +17,7 @@ class Pages {
   Future<Uri> create(String title, {bool force}) async {
     // Slugify title to create a file name.
     var fileName = p.setExtension(Slugify(title), '.md');
-    var fileUri = Uri.file(p.join(sourceDir.path, fileName));
+    var fileUri = sourceDir.resolve(fileName);
     var metadata = <String, dynamic>{
       'title': title,
       'date': formatDate(DateTime.now()),

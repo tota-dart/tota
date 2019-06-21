@@ -49,7 +49,7 @@ Map<String, dynamic> createTestFiles(String tempDir, List<String> fileIds) {
 
   // Create test HTML templates.
   var templatesDir = Uri.directory(p.join(tempDir, 'templates'));
-  Directory(p.join(templatesDir.path, '_partials'))
+  Directory.fromUri(templatesDir.resolve('_partials'))
     ..createSync(recursive: true);
   File(p.join(templatesDir.path, 'base.mustache'))
     ..writeAsStringSync('{{ content }}');

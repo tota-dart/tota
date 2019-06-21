@@ -80,6 +80,10 @@ void main() {
       config.allowEmpty = true;
     });
 
+    tearDown(() {
+      config.allowEmpty = false;
+    });
+
     test('loads file in directory', () {
       withTempDir((path) {
         config.rootDir = Uri.directory(path);
@@ -120,6 +124,10 @@ void main() {
       config.allowEmpty = true;
     });
 
+    tearDown(() {
+      config.allowEmpty = false;
+    });
+
     test('generates HTML files', () {
       return withTempDir((path) async {
         config.rootDir = Uri.directory(path);
@@ -139,6 +147,37 @@ void main() {
           // File name is expected.
           expect(p.basename(fileUri.path), equals('test-${testIds[i]}.html'));
         });
+      });
+    });
+
+    test('public directory structure resembles source directory', () {
+      return withTempDir((path) async {
+        config.rootDir = Uri.directory(path);
+
+        var t = createTestFiles(path, testIds);
+
+        // Create nested directory in source directory.
+        var fileDir =
+            Directory.fromUri(t['pagesDir'].resolve('path/to/nested'));
+        await fileDir.create(recursive: true);
+
+        // Write test file in nested directory.
+        var fileUri = Uri.file(p.join(fileDir.path, 'page.md'));
+        await File.fromUri(fileUri)
+            .writeAsString('---\npublic: true\n---\nfoo');
+
+        var nestedDir = Directory(p.dirname(fileUri.toFilePath()));
+
+        var result = await generateHtmlFiles(
+            files: <Uri>[fileUri],
+            sourceDir: t['pagesDir'],
+            publicDir: t['publicDir']);
+
+        var expectedFile = File(
+            p.join(t['publicDir'].toFilePath(), 'path/to/nested/page.html'));
+
+        expect(result.length, equals(1));
+        expect(expectedFile.exists(), completion(equals(true)));
       });
     });
   });

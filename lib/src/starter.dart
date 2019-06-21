@@ -14,14 +14,14 @@ Future<void> clone(Uri targetUri) async {
   }
 
   // Remove .git directory to enable new git project initialization.
-  var subDir = Directory(p.join(targetUri.path, '.git'));
-  if (await subDir.exists()) {
-    await subDir.delete(recursive: true);
+  var gitDir = Directory.fromUri(targetUri.resolve('.git'));
+  if (await gitDir.exists()) {
+    await gitDir.delete(recursive: true);
   }
 
   // Create config file from example.
-  var file = File(p.join(targetUri.path, '.env.example'));
+  var file = File.fromUri(targetUri.resolve('.env.example'));
   if (await file.exists()) {
-    await file.rename(p.join(targetUri.path, '.env'));
+    await file.rename(targetUri.resolve('.env').toFilePath());
   }
 }

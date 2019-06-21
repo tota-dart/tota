@@ -12,5 +12,5 @@ class Posts extends Pages {
   /// Adds an additional sub-directory path to the public directory,
   /// so that posts are nested inside the public directory.
   @override
-  Uri publicDir = Uri.directory(p.join(config.publicDir.path, 'posts'));
+  Uri publicDir = config.publicDir.resolve('posts');
 }

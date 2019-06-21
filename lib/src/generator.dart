@@ -80,7 +80,7 @@ Future<List<Uri>> generateHtmlFiles(
           ? parsed.data['template']
           : _defaultHtmlTemplate;
       var templateFile =
-          File(p.join(config.templatesDir.path, templateFileName));
+          File.fromUri(config.templatesDir.resolve(templateFileName));
       if (!await templateFile.exists()) {
         throw TotaException('HTML template not found: `$templateFileName`');
       }
@@ -88,14 +88,13 @@ Future<List<Uri>> generateHtmlFiles(
           partialResolver: getTemplatePartial);
 
       // Create a file URI relative to source directory, in order to
-      // generate the same directory structure in the public directory.
+      // generate the same nested directory structure in the public directory.
       var fileName = p.relative(p.setExtension(srcFile.path, '.html'),
           from: sourceDir.path);
-      Uri fileUri = Uri.file(p.join(publicDir.path, fileName));
+      Uri fileUri = publicDir.resolve(fileName);
 
       // Create nested directories in public directory before writing the file.
-      await Directory(p.join(publicDir.path, p.dirname(fileUri.path)))
-          .create(recursive: true);
+      await Directory(p.dirname(fileUri.toFilePath())).create(recursive: true);
 
       // Write to destination file.
       File file = File.fromUri(fileUri);
@@ -114,7 +113,7 @@ Future<List<Uri>> generateHtmlFiles(
 /// Recursively searches the `_partials` directory for a file
 /// that matches the partial [name].
 Template getTemplatePartial(String name) {
-  var directory = Directory(p.join(config.templatesDir.path, '_partials'));
+  var directory = Directory.fromUri(config.templatesDir.resolve('_partials'));
   if (!directory.existsSync()) {
     throw TotaException("template partials directory doesn't exist");
   }
