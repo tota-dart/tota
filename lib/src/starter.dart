@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'package:path/path.dart' as p;
 import 'tota_exception.dart';
 
 /// URL of the source git repository.

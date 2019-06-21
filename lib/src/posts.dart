@@ -1,4 +1,3 @@
-import 'package:path/path.dart' as p;
 import 'pages.dart';
 import 'config.dart';
 import 'utils.dart';

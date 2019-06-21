@@ -42,7 +42,6 @@ class NewCommand extends Command {
       progress.finish(showTiming: true);
 
       logger.stdout('File ${logger.ansi.emphasized('created')}.');
-      logger.flush();
     } catch (e) {
       logger.stderr(logger.ansi.error(e.message));
     }

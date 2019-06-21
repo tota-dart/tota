@@ -166,8 +166,6 @@ void main() {
         await File.fromUri(fileUri)
             .writeAsString('---\npublic: true\n---\nfoo');
 
-        var nestedDir = Directory(p.dirname(fileUri.toFilePath()));
-
         var result = await generateHtmlFiles(
             files: <Uri>[fileUri],
             sourceDir: t['pagesDir'],

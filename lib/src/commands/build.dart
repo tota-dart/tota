@@ -39,7 +39,6 @@ class BuildCommand extends Command {
       }
 
       logger.stdout('All ${logger.ansi.emphasized('done')}.');
-      logger.flush();
     } catch (e) {
       logger.stderr(logger.ansi.error(e.message));
     }
