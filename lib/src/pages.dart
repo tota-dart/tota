@@ -11,7 +11,7 @@ class Pages {
   Uri sourceDir = config.pagesDir;
 
   /// The URI for the public directory.
-  Uri publicDir = config.publicDir;
+  Uri get publicDir => config.publicDir;
 
   /// Scaffolds a new page file with desired [title].
   Future<Uri> create(String title, {bool force}) async {

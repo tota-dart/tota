@@ -1,5 +1,6 @@
 import 'package:args/command_runner.dart';
 import 'package:cli_util/cli_logging.dart';
+import 'package:dotenv/dotenv.dart' as dotenv;
 import '../../tota.dart' as tota;
 import '../tota_exception.dart';
 
@@ -23,6 +24,8 @@ class NewCommand extends Command {
   }
 
   void run() async {
+    dotenv.load();
+
     Logger logger =
         argResults['verbose'] ? Logger.verbose() : Logger.standard();
 
