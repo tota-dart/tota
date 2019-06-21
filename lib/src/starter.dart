@@ -7,8 +7,8 @@ final Uri repoUrl = Uri.https('github.com', 'tota-dart/tota-starter.git');
 
 /// Clones the directory from GitHub to target directory.
 Future<void> clone(Uri targetUri) async {
-  var results = await Process.run('git',
-      ['clone', '--recursive', repoUrl.toString(), targetUri.toFilePath()]);
+  var results = await Process.run(
+      'git', ['clone', repoUrl.toString(), targetUri.toFilePath()]);
   if (results.exitCode != 0) {
     throw TotaException(results.stderr);
   }
