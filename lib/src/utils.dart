@@ -34,7 +34,7 @@ String createFrontMatter(Map<String, dynamic> data) {
 
 /// Gets environment variable with [prefix].
 String getenv(String key,
-    {String fallback, String prefix = 'TOTA_', bool allowEmpty: false}) {
+    {String fallback, String prefix = 'TOTA_', bool allowEmpty = false}) {
   var value = dotenv.env['$prefix$key'] ?? fallback;
   if (value == null && !allowEmpty) {
     throw TotaException('config not set: `$prefix$key`');
