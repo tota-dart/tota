@@ -3,8 +3,6 @@
 A simple and elegant framework for generating static sites.
 Great for personal websites, blogs, documentation, and more.
 
-Early stages, not intended for production use just yet.
-
 ## Install
 
 #### Pre-requisites:

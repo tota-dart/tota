@@ -11,8 +11,8 @@ pub global activate tota
 ### Setup your site
 
 ```bash
-tota init blog
-cd blog
+mkdir blog && cd blog
+tota init
 ```
 
 ### Create a new post
