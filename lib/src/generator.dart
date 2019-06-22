@@ -34,12 +34,16 @@ Future<Uri> createSourceFile(Uri fileUri,
   return fileUri;
 }
 
-/// Lists all files in a directory.
+/// Lists all files in a [directory].
 ///
 /// Returns a list of all Markdown files in a [directory] (recursively).
 /// Optionally filters out files that don't match a file [extension].
-Future<List<Uri>> listDirectory(Uri uri, {String extension}) async {
-  var entities = await Directory.fromUri(uri).list(recursive: true).toList();
+Future<List<Uri>> listDirectory(Uri directory, {String extension}) async {
+  var dir = Directory.fromUri(directory);
+  if (!await dir.exists()) {
+    throw TotaException('Directory not found: ${directory.toFilePath()}');
+  }
+  var entities = await dir.list(recursive: true).toList();
   var files = entities.whereType<File>().toList();
   if (extension != null) {
     files.removeWhere((file) => p.extension(file.path) != extension);
@@ -68,7 +72,7 @@ Future<List<Uri>> generateHtmlFiles(
     if ((parsed.data?.containsKey('public') ?? false) &&
         parsed.data['public']) {
       // Convert body content from markdown to HTML.
-      var fileContent = markdownToHtml(parsed.content, inlineSyntaxes: [
+      var bodyContent = markdownToHtml(parsed.content, inlineSyntaxes: [
         InlineHtmlSyntax(),
       ], blockSyntaxes: [
         HeaderWithIdSyntax(),
@@ -96,12 +100,22 @@ Future<List<Uri>> generateHtmlFiles(
       // Create nested directories in public directory before writing the file.
       await Directory(p.dirname(fileUri.toFilePath())).create(recursive: true);
 
+      // Compile HTML templates.
+      String fileContent;
+      try {
+        fileContent = template.renderString({
+          'content': bodyContent,
+          'title': parsed.data['title'] ?? getenv('TITLE'),
+          'description': parsed.data['description'] ?? getenv('DESCRIPTION'),
+          'date': parsed.data['date'] ?? formatDate(DateTime.now()),
+          'data': parsed.data,
+        });
+      } catch (e) {
+        throw TotaException('Failed to compile templates. ${e.message}');
+      }
+
       // Write to destination file.
-      File file = File.fromUri(fileUri);
-      await file.writeAsString(template.renderString({
-        'content': fileContent,
-        'data': parsed.data,
-      }));
+      await File.fromUri(fileUri).writeAsString(fileContent);
       generated.add(fileUri);
     }
   }
@@ -124,4 +138,31 @@ Template getTemplatePartial(String name) {
     }
   }
   return Template(partial);
+}
+
+/// Copies a directory from a [source] to a [destination] URI.
+Future<void> copyDirectory(Uri source, destination) async {
+  var sourceDir = Directory.fromUri(source);
+  await for (FileSystemEntity entity in sourceDir.list(recursive: true)) {
+    if (await FileSystemEntity.isFile(entity.path)) {
+      // Relative file path from origin directory.
+      var filePath = p.relative(entity.path, from: source.toFilePath());
+      // Relative path joined to destination.
+      var destPath = p.join(destination.toFilePath(), filePath);
+      // Create any nested sub-directories.
+      await Directory(p.dirname(destPath)).create(recursive: true);
+      // Copy file to new path.
+      var file = await File(entity.path)
+        ..copy(destPath);
+    }
+  }
+}
+
+/// Deletes a [directory].
+Future<bool> removeDir(Uri directory, {bool recursive = false}) async {
+  Directory dir = Directory.fromUri(directory);
+  if (await dir.exists()) {
+    await dir.delete(recursive: recursive);
+  }
+  return await dir.exists();
 }

@@ -36,7 +36,7 @@ class NewCommand extends Command {
       }
 
       Progress progress = logger.progress('Generating file');
-      Uri file = await tota.create(title,
+      Uri file = await tota.createPage(title,
           type: argResults['type'], force: argResults['force']);
       logger.trace(file.path);
       progress.finish(showTiming: true);

@@ -10,23 +10,25 @@ class _Config {
 
   _Config(this.rootDir);
 
-  // Gets the config variable from the environment variables.
-  String _getenv(String name, {String fallback, bool allowEmpty}) =>
-      getenv(name, fallback: fallback, allowEmpty: allowEmpty);
-
   // Resolves a directory [name] relative to the [rootDir].
   // Also forces directories to have a trailing slash.
   Uri _resolveDir(String name) =>
       rootDir.resolve(name.endsWith('/') ? name : '$name/');
 
-  Uri get publicDir => _resolveDir(_getenv('PUBLIC_DIR', fallback: 'public/'));
+  Uri get publicDir => _resolveDir(getenv('PUBLIC_DIR',
+      fallback: 'public', isDirectory: true, allowEmpty: allowEmpty));
 
-  Uri get pagesDir => _resolveDir(_getenv('PAGES_DIR', fallback: 'pages/'));
+  Uri get pagesDir => _resolveDir(getenv('PAGES_DIR',
+      fallback: 'pages', isDirectory: true, allowEmpty: allowEmpty));
 
-  Uri get postsDir => _resolveDir(_getenv('POSTS_DIR', fallback: 'posts/'));
+  Uri get postsDir => _resolveDir(getenv('POSTS_DIR',
+      fallback: 'posts', isDirectory: true, allowEmpty: allowEmpty));
 
-  Uri get templatesDir =>
-      _resolveDir(_getenv('TEMPLATES_DIR', fallback: 'templates/'));
+  Uri get templatesDir => _resolveDir(getenv('TEMPLATES_DIR',
+      fallback: 'templates', isDirectory: true, allowEmpty: allowEmpty));
+
+  Uri get assetsDir => _resolveDir(getenv('ASSETS_DIR',
+      fallback: 'assets', isDirectory: true, allowEmpty: allowEmpty));
 }
 
 final _Config config = _Config(Uri.directory(p.current));

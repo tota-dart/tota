@@ -24,7 +24,7 @@ class InitCommand extends Command {
           : p.join(p.current, argResults['directory']);
 
       Progress progress = logger.progress('Intializing project');
-      await tota.init(Uri.directory(directoryPath));
+      await tota.createProject(Uri.directory(directoryPath));
       progress.finish(showTiming: true);
 
       logger.stdout('Project ${logger.ansi.emphasized('created')}.');

@@ -12,10 +12,8 @@ class Posts extends Pages {
   /// Adds an additional sub-directory path to the public directory,
   /// so that posts are nested inside the public directory.
   @override
-  Uri get publicDir => config.publicDir.resolve(_dirname);
-
-  get _dirname {
-    var name = getenv('POSTS_DIR', fallback: 'posts/');
-    return name.endsWith('/') ? name : '$name/';
+  Uri get publicDir {
+    var dirname = getenv('POSTS_DIR', fallback: 'posts', isDirectory: true);
+    return config.publicDir.resolve(dirname);
   }
 }

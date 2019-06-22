@@ -31,12 +31,16 @@ Future<T> withTempDir<T>(Future<T> fn(String path)) async {
 ///
 /// Bootstraps a directory in the [tempDir] path, with test files
 /// to run the test suite against.
-Map<String, dynamic> createTestFiles(String tempDir, List<String> fileIds) {
-  // Create source directory
-  var pagesDir = Directory(p.join(tempDir, 'pages'))..createSync();
+Map<String, dynamic> createTestFiles(String tempDirPath, List<String> fileIds) {
+  Uri tempDir = Uri.directory(tempDirPath);
+
+  // Create pages source directory.
+  Uri pagesDir = tempDir.resolve('pages/');
+  Directory.fromUri(pagesDir).createSync();
+
   // Generate test pages.
-  var files = List<Uri>.generate(fileIds.length,
-      (i) => Uri.file(p.join(pagesDir.path, 'test-${fileIds[i]}.md')));
+  var files = List<Uri>.generate(
+      fileIds.length, (i) => pagesDir.resolve('test-${fileIds[i]}.md'));
   // Write file contents.
   files.asMap().forEach((i, uri) {
     var file = File.fromUri(uri);
@@ -48,16 +52,23 @@ Map<String, dynamic> createTestFiles(String tempDir, List<String> fileIds) {
   });
 
   // Create test HTML templates.
-  var templatesDir = Uri.directory(p.join(tempDir, 'templates'));
-  Directory.fromUri(templatesDir.resolve('_partials'))
-    ..createSync(recursive: true);
-  File(p.join(templatesDir.path, 'base.mustache'))
-    ..writeAsStringSync('{{ content }}');
+  var templatesDir = tempDir.resolve('templates/');
+  Directory.fromUri(templatesDir.resolve('_partials/'))
+      .createSync(recursive: true);
+  File.fromUri(templatesDir.resolve('base.mustache'))
+      .writeAsStringSync('{{ content }}');
+
+  // Create asset directory and asset file.
+  var assetsDir = tempDir.resolve('assets/');
+  Directory.fromUri(assetsDir).createSync();
+  File.fromUri(assetsDir.resolve('index.js'))
+      .writeAsStringSync('console.log("foo")');
 
   return <String, dynamic>{
     'files': files,
-    'pagesDir': Uri.directory(pagesDir.path),
+    'pagesDir': pagesDir,
     'templatesDir': templatesDir,
-    'publicDir': Uri.directory(p.join(tempDir, 'public'))
+    'assetsDir': assetsDir,
+    'publicDir': tempDir.resolve('public/')
   };
 }

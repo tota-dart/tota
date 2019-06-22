@@ -1,12 +1,17 @@
 import 'dart:io';
 import 'package:test/test.dart';
 import 'package:path/path.dart' as p;
+import 'package:dotenv/dotenv.dart' as dotenv;
 import 'package:tota/src/config.dart';
 import 'package:tota/tota.dart';
 import 'package:tota/src/generator.dart';
 import 'utils.dart';
 
 void main() {
+  setUp(() {
+    dotenv.load('test/fixtures/.env');
+  });
+
   group('createSourceFile', () {
     test('creates a new file', () {
       withTempDir((path) async {
@@ -176,6 +181,25 @@ void main() {
 
         expect(result.length, equals(1));
         expect(expectedFile.exists(), completion(equals(true)));
+      });
+    });
+  });
+
+  group('copyDirectory()', () {
+    test('copies assets directory to public directory', () {
+      return withTempDir((path) async {
+        config.rootDir = Uri.directory(path);
+
+        var t = createTestFiles(path, <String>['foo']);
+        var targetUri = t['publicDir'].resolve('assets/');
+        await copyDirectory(t['assetsDir'], targetUri);
+
+        // Destination directory exists.
+        expect(Directory.fromUri(targetUri).exists(), completion(equals(true)));
+
+        var file = File.fromUri(targetUri.resolve('index.js'));
+        expect(file.exists(), completion(equals(true)));
+        expect(file.readAsString(), completion(equals('console.log("foo")')));
       });
     });
   });

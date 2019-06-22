@@ -12,8 +12,6 @@ class BuildCommand extends Command {
   BuildCommand() {
     argParser.addFlag('verbose',
         abbr: 'v', negatable: false, help: 'Enable verbose logging.');
-    argParser.addFlag('deploy',
-        abbr: 'd', negatable: false, help: 'Deploy after build finishes.');
   }
 
   void run() async {
@@ -24,19 +22,20 @@ class BuildCommand extends Command {
 
     try {
       // Delete existing public directory.
-      var publicDir = Directory.fromUri(config.publicDir);
-      if (await publicDir.exists()) {
-        await publicDir.delete(recursive: true);
-      }
+      logger.stdout('Deleting public directory');
+      logger.trace(config.publicDir.toFilePath());
+      await tota.deletePublicDir();
 
-      Progress buildProgress = logger.progress('Generating static files');
-      List<Uri> files = await tota.build();
+      // Build pages, posts, etc.
+      Progress progress = logger.progress('Generating static files');
+      List<Uri> files = await tota.buildPages();
       files.forEach((file) => logger.trace(file.path));
-      buildProgress.finish(showTiming: true);
+      progress.finish(showTiming: true);
 
-      if (argResults['deploy']) {
-        logger.stdout('Deployment has not yet been implemented.');
-      }
+      // Copy assets folder to public directory.
+      logger.stdout('Copying assets directory to public directory');
+      logger.trace(config.publicDir.toFilePath());
+      await tota.copyAssets();
 
       logger.stdout('All ${logger.ansi.emphasized('done')}.');
     } catch (e) {

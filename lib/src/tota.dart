@@ -5,13 +5,15 @@ import 'config.dart';
 import 'starter.dart';
 import 'pages.dart';
 import 'posts.dart';
+import 'generator.dart' show removeDir, copyDirectory;
 import 'tota_exception.dart';
+import 'utils.dart';
 
 /// Page type assigned to posts.
-const postPageType = 'post';
+const _postPageType = 'post';
 
 /// Initializes a new project in [directory].
-Future<void> init(Uri directory) async {
+Future<void> createProject(Uri directory) async {
   var dir = Directory.fromUri(directory);
 
   // Stop if directory isn't empty.
@@ -26,33 +28,33 @@ Future<void> init(Uri directory) async {
   return await clone(directory);
 }
 
-/// Runs the generator, creating static files.
-Future<List<Uri>> build() async {
-  // Delete existing public directory to start from scratch.
-  var publicDir = Directory.fromUri(config.publicDir);
-  if (await publicDir.exists()) {
-    await publicDir.delete(recursive: true);
-  }
+/// Deletes the existing public directory.
+Future<void> deletePublicDir() => removeDir(config.publicDir, recursive: true);
 
+/// Creates static files from sources files (pages, posts, etc.)
+Future<List<Uri>> buildPages() async {
   Pages pages = Pages();
   Posts posts = Posts();
-
-  List<Uri> result = [
+  return <Uri>[
     ...await pages.build(),
     ...await posts.build(),
   ];
+}
 
-  return result;
+/// Copies assets directory to public directory.
+Future<void> copyAssets() async {
+  var dirname = getenv('ASSETS_DIR', fallback: 'assets', isDirectory: true);
+  return copyDirectory(config.assetsDir, config.publicDir.resolve(dirname));
 }
 
 /// Creates a new source file.
 ///
 /// The default [type] of resource to create is "page". Will throw an
 /// exception if file already exists, but [force] will override this.
-Future<Uri> create(String title, {String type, bool force}) async {
+Future<Uri> createPage(String title, {String type, bool force}) async {
   Pages resource;
   switch (type) {
-    case postPageType:
+    case _postPageType:
       resource = Posts();
       break;
     default:
