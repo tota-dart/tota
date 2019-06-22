@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:dotenv/dotenv.dart' as dotenv;
 import 'package:args/command_runner.dart';
 import 'package:cli_util/cli_logging.dart';

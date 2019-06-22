@@ -152,8 +152,7 @@ Future<void> copyDirectory(Uri source, destination) async {
       // Create any nested sub-directories.
       await Directory(p.dirname(destPath)).create(recursive: true);
       // Copy file to new path.
-      var file = await File(entity.path)
-        ..copy(destPath);
+      await File(entity.path).copy(destPath);
     }
   }
 }

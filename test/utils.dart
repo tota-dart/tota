@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'package:path/path.dart' as p;
 
 /// Creates a temp directory in the system temp directory, whose name will be
 /// 'tota_' with characters appended to it to make a unique name.
