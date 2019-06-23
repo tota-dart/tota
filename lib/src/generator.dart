@@ -108,6 +108,7 @@ Future<List<Uri>> generateHtmlFiles(
           'title': parsed.data['title'] ?? getenv('TITLE'),
           'description': parsed.data['description'] ?? getenv('DESCRIPTION'),
           'date': parsed.data['date'] ?? formatDate(DateTime.now()),
+          'language': getenv('LANGUAGE'),
           'data': parsed.data,
         });
       } catch (e) {
