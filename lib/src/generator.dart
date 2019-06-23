@@ -8,6 +8,7 @@ import 'config.dart';
 import 'utils.dart';
 
 const _defaultHtmlTemplate = 'base.mustache';
+const _defaultLanguage = 'en';
 
 /// Scaffolds a source file from a starting template.
 ///
@@ -83,6 +84,10 @@ Future<List<Uri>> generateHtmlFiles(
       var templateFileName = parsed.data.containsKey('template')
           ? parsed.data['template']
           : _defaultHtmlTemplate;
+      // Add template file extension if absent.
+      if (p.extension(templateFileName).isEmpty) {
+        templateFileName = p.setExtension(templateFileName, '.mustache');
+      }
       var templateFile =
           File.fromUri(config.templatesDir.resolve(templateFileName));
       if (!await templateFile.exists()) {
@@ -108,7 +113,7 @@ Future<List<Uri>> generateHtmlFiles(
           'title': parsed.data['title'] ?? getenv('TITLE'),
           'description': parsed.data['description'] ?? getenv('DESCRIPTION'),
           'date': parsed.data['date'] ?? formatDate(DateTime.now()),
-          'language': getenv('LANGUAGE'),
+          'language': getenv('LANGUAGE', fallback: _defaultLanguage),
           'data': parsed.data,
         });
       } catch (e) {
