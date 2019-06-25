@@ -3,14 +3,10 @@ library tota;
 import 'dart:io';
 import 'config.dart';
 import 'starter.dart';
-import 'pages.dart';
-import 'posts.dart';
+import 'resource.dart';
 import 'generator.dart' show removeDir, copyDirectory;
 import 'tota_exception.dart';
 import 'utils.dart';
-
-/// Page type assigned to posts.
-const _postPageType = 'post';
 
 /// Initializes a new project in [directory].
 Future<void> createProject(Uri directory) async {
@@ -32,13 +28,15 @@ Future<void> createProject(Uri directory) async {
 Future<void> deletePublicDir() => removeDir(config.publicDir, recursive: true);
 
 /// Creates static files from sources files (pages, posts, etc.)
-Future<List<Uri>> buildPages() async {
-  Pages pages = Pages();
-  Posts posts = Posts();
-  return <Uri>[
-    ...await pages.build(),
-    ...await posts.build(),
-  ];
+Future<List<Uri>> buildFiles() async {
+  List<Uri> pages = await build(config.pagesDir, config.publicDir);
+  // Posts are nested one-level deep inside the public directory.
+  // This will be reflected in the URL path for the blog.
+  var postsDirname = getenv('POSTS_DIR', fallback: 'posts', isDirectory: true);
+  List<Uri> posts =
+      await build(config.postsDir, config.publicDir.resolve(postsDirname));
+
+  return <Uri>[...pages, ...posts];
 }
 
 /// Copies assets directory to public directory.
@@ -51,15 +49,11 @@ Future<void> copyAssets() async {
 ///
 /// The default [type] of resource to create is "page". Will throw an
 /// exception if file already exists, but [force] will override this.
-Future<Uri> createPage(String title, {String type, bool force}) async {
-  Pages resource;
-  switch (type) {
-    case _postPageType:
-      resource = Posts();
-      break;
+Future<Uri> createPage(Resource resource, String title, {bool force}) async {
+  switch (resource) {
+    case Resource.Post:
+      return create(config.postsDir, title, force: force);
     default:
-      resource = Pages();
+      return create(config.pagesDir, title, force: force);
   }
-
-  return resource.create(title, force: force);
 }

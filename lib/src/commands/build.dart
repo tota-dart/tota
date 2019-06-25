@@ -27,7 +27,7 @@ class BuildCommand extends Command {
 
       // Build pages, posts, etc.
       Progress progress = logger.progress('Generating static files');
-      List<Uri> files = await tota.buildPages();
+      List<Uri> files = await tota.buildFiles();
       files.forEach((file) => logger.trace(file.path));
       progress.finish(showTiming: true);
 
