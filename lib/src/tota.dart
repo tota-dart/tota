@@ -51,7 +51,7 @@ Future<void> copyAssets() async {
 /// exception if file already exists, but [force] will override this.
 Future<Uri> createPage(Resource resource, String title, {bool force}) async {
   switch (resource) {
-    case Resource.Post:
+    case Resource.post:
       return create(config.postsDir, title, force: force);
     default:
       return create(config.pagesDir, title, force: force);

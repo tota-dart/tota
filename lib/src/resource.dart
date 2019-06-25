@@ -1,13 +1,12 @@
 import 'package:slugify/slugify.dart';
 import 'package:path/path.dart' as p;
 import 'generator.dart';
-import 'config.dart';
 import 'utils.dart';
 
 const _markdownFileExtension = '.md';
 
 /// Represents the resource types.
-enum Resource { Page, Post }
+enum Resource { page, post }
 
 /// Scaffolds a new page file with desired [title].
 Future<Uri> create(Uri sourceDir, String title, {bool force}) async {
