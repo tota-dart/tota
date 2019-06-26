@@ -14,7 +14,7 @@ class SiteConfig {
 
   final String url, title, description, author, language;
 
-  Map<String, dynamic> toJson() {
+  Map<String, String> toJson() {
     return <String, String>{
       'url': url,
       'title': title,
@@ -37,7 +37,7 @@ class DirectoryConfig {
 
   final String public, pages, posts, templates, assets;
 
-  Map<String, dynamic> toJson() {
+  Map<String, String> toJson() {
     return <String, String>{
       'public': public,
       'pages': pages,
@@ -56,30 +56,22 @@ class Config {
 }
 
 /// Creates a new config instance from environment variable settings.
-///
-/// This method is pretty gnarly, but the config is consolidated here
-/// instead of having the codebase littered with `getenv()` calls.
-/// This made it easier to inject config as a dependency and create unit tests.
-Config createConfig({bool allowEmpty = false}) {
+Config createConfig() {
   var siteConfig = SiteConfig(
-    url: getenv('URL', allowEmpty: allowEmpty),
-    title: getenv('TITLE', allowEmpty: allowEmpty),
-    description: getenv('DESCRIPTION', allowEmpty: allowEmpty),
-    author: getenv('AUTHOR', allowEmpty: allowEmpty),
-    language: getenv('LANGUAGE', fallback: 'en', allowEmpty: allowEmpty),
+    url: getenv('URL'),
+    title: getenv('TITLE'),
+    description: getenv('DESCRIPTION'),
+    author: getenv('AUTHOR'),
+    language: getenv('LANGUAGE', fallback: 'en'),
   );
 
   var dirConfig = DirectoryConfig(
-    public: getenv('PUBLIC_DIR',
-        fallback: 'public', allowEmpty: allowEmpty, isDirectory: true),
-    pages: getenv('PAGES_DIR',
-        fallback: 'pages', allowEmpty: allowEmpty, isDirectory: true),
-    posts: getenv('POSTS_DIR',
-        fallback: 'posts', allowEmpty: allowEmpty, isDirectory: true),
-    templates: getenv('TEMPLATES_DIR',
-        fallback: 'templates', allowEmpty: allowEmpty, isDirectory: true),
-    assets: getenv('ASSETS_DIR',
-        fallback: 'assets', allowEmpty: allowEmpty, isDirectory: true),
+    public: getenv('PUBLIC_DIR', fallback: 'public', isDirectory: true),
+    pages: getenv('PAGES_DIR', fallback: 'pages', isDirectory: true),
+    posts: getenv('POSTS_DIR', fallback: 'posts', isDirectory: true),
+    templates:
+        getenv('TEMPLATES_DIR', fallback: 'templates', isDirectory: true),
+    assets: getenv('ASSETS_DIR', fallback: 'assets', isDirectory: true),
   );
 
   return Config(siteConfig, dirConfig);

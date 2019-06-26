@@ -8,11 +8,8 @@ import 'package:tota/src/generator.dart';
 import 'utils.dart';
 
 void main() {
-  Config testConfig;
-
   setUp(() {
     dotenv.load('test/fixtures/.env');
-    testConfig = createConfig(allowEmpty: true);
   });
 
   group('createSourceFile', () {
