@@ -9,7 +9,7 @@ const _markdownFileExtension = '.md';
 enum Resource { page, post }
 
 /// Scaffolds a new page file with desired [title].
-Future<Uri> create(Uri sourceDir, String title, {bool force}) async {
+Future<Uri> createResource(Uri sourceDir, String title, {bool force}) async {
   // Slugify title to create a file name.
   var fileName = p.setExtension(Slugify(title), '.md');
   var metadata = <String, dynamic>{
@@ -24,9 +24,15 @@ Future<Uri> create(Uri sourceDir, String title, {bool force}) async {
 }
 
 /// Lists all Markdown files in the pages directory.
-Future<List<Uri>> list(Uri sourceDir) =>
+Future<List<Uri>> listResources(Uri sourceDir) =>
     listDirectory(sourceDir, extension: _markdownFileExtension);
 
-/// Builds the files in the pages directory.
-Future<List<Uri>> build(Uri sourceDir, publicDir) async => generateHtmlFiles(
-    files: await list(sourceDir), sourceDir: sourceDir, publicDir: publicDir);
+/// Compiles the files in the pages directory.
+Future<List<Uri>> compileResources(
+    Uri sourceDir, publicDir, templatesDir) async {
+  generateHtmlFiles(
+      files: await listResources(sourceDir),
+      sourceDir: sourceDir,
+      publicDir: publicDir,
+      templatesDir: templatesDir);
+}

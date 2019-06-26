@@ -1,6 +1,7 @@
 library tota;
 
 import 'dart:io';
+import 'package:cli_util/cli_logging.dart';
 import 'config.dart';
 import 'starter.dart';
 import 'resource.dart';
@@ -24,36 +25,54 @@ Future<void> createProject(Uri directory) async {
   return await clone(directory);
 }
 
-/// Deletes the existing public directory.
-Future<void> deletePublicDir() => removeDir(config.publicDir, recursive: true);
-
-/// Creates static files from sources files (pages, posts, etc.)
-Future<List<Uri>> buildFiles() async {
-  List<Uri> pages = await build(config.pagesDir, config.publicDir);
-  // Posts are nested one-level deep inside the public directory.
-  // This will be reflected in the URL path for the blog.
-  var postsDirname = getenv('POSTS_DIR', fallback: 'posts', isDirectory: true);
-  List<Uri> posts =
-      await build(config.postsDir, config.publicDir.resolve(postsDirname));
-
-  return <Uri>[...pages, ...posts];
-}
-
-/// Copies assets directory to public directory.
-Future<void> copyAssets() async {
-  var dirname = getenv('ASSETS_DIR', fallback: 'assets', isDirectory: true);
-  return copyDirectory(config.assetsDir, config.publicDir.resolve(dirname));
-}
-
-/// Creates a new source file.
+/// Creates a new page file.
 ///
 /// The default [type] of resource to create is "page". Will throw an
 /// exception if file already exists, but [force] will override this.
-Future<Uri> createPage(Resource resource, String title, {bool force}) async {
+Future<void> createPage(Config config, String title,
+    {Resource resource = Resource.page, bool force, Logger logger}) async {
+  logger ??= Logger.standard();
+
+  Progress progress = logger.progress('Generating file');
+  Uri file;
   switch (resource) {
     case Resource.post:
-      return create(config.postsDir, title, force: force);
+      file = await createResource(resolveDir(config.dir.posts), title,
+          force: force);
+      break;
     default:
-      return create(config.pagesDir, title, force: force);
+      file = await createResource(resolveDir(config.dir.pages), title,
+          force: force);
   }
+  logger.trace(file.toFilePath());
+  progress.finish(showTiming: true);
+}
+
+/// Compiles source files and generates static files in the public directory.
+Future<void> compile(Config config, {Logger logger}) async {
+  logger ??= Logger.standard();
+
+  // Empty the public directory.
+  Uri publicDir = resolveDir(config.dir.public);
+  logger.stdout('Deleting public directory');
+  logger.trace(publicDir.toFilePath());
+  await removeDir(publicDir, recursive: true);
+
+  Progress progress = logger.progress('Generating static files');
+  Uri pagesDir = resolveDir(config.dir.pages);
+  Uri templatesDir = resolveDir(config.dir.templates);
+  await compileResources(pagesDir, publicDir, templatesDir);
+
+  // Posts are nested one-level deep inside the public directory.
+  // This will be reflected in the URL path for the blog.
+  Uri postsDir = resolveDir(config.dir.posts);
+  Uri publicPostsDir = publicDir.resolve(config.dir.posts);
+  await compileResources(postsDir, publicPostsDir, templatesDir);
+  progress.finish(showTiming: true);
+
+  // Copy assets directory to public directory.
+  Uri publicAssetsDir = publicDir.resolve(config.dir.assets);
+  logger.stdout('Copying assets folder');
+  logger.trace(publicAssetsDir.toFilePath());
+  copyDirectory(resolveDir(config.dir.assets), publicAssetsDir);
 }

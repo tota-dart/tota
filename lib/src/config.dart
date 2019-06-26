@@ -1,34 +1,86 @@
+import 'package:meta/meta.dart';
 import 'package:path/path.dart' as p;
 import 'utils.dart';
 
-class _Config {
-  /// The current working directory.
-  Uri rootDir;
+/// Represents the site configuration settings.
+class SiteConfig {
+  SiteConfig({
+    @required this.url,
+    @required this.title,
+    @required this.description,
+    @required this.author,
+    @required this.language,
+  });
 
-  /// Allows config variables to be empty (mainly used in testing).
-  bool allowEmpty = false;
+  final String url, title, description, author, language;
 
-  _Config(this.rootDir);
-
-  // Resolves a directory [name] relative to the [rootDir].
-  // Also forces directories to have a trailing slash.
-  Uri _resolveDir(String name) =>
-      rootDir.resolve(name.endsWith('/') ? name : '$name/');
-
-  Uri get publicDir => _resolveDir(getenv('PUBLIC_DIR',
-      fallback: 'public', isDirectory: true, allowEmpty: allowEmpty));
-
-  Uri get pagesDir => _resolveDir(getenv('PAGES_DIR',
-      fallback: 'pages', isDirectory: true, allowEmpty: allowEmpty));
-
-  Uri get postsDir => _resolveDir(getenv('POSTS_DIR',
-      fallback: 'posts', isDirectory: true, allowEmpty: allowEmpty));
-
-  Uri get templatesDir => _resolveDir(getenv('TEMPLATES_DIR',
-      fallback: 'templates', isDirectory: true, allowEmpty: allowEmpty));
-
-  Uri get assetsDir => _resolveDir(getenv('ASSETS_DIR',
-      fallback: 'assets', isDirectory: true, allowEmpty: allowEmpty));
+  Map<String, dynamic> toJson() {
+    return <String, String>{
+      'url': url,
+      'title': title,
+      'description': description,
+      'author': author,
+      'language': language
+    };
+  }
 }
 
-final _Config config = _Config(Uri.directory(p.current));
+/// Represents the directory configuration settings.
+class DirectoryConfig {
+  DirectoryConfig({
+    @required this.public,
+    @required this.pages,
+    @required this.posts,
+    @required this.templates,
+    @required this.assets,
+  });
+
+  final String public, pages, posts, templates, assets;
+
+  Map<String, dynamic> toJson() {
+    return <String, String>{
+      'public': public,
+      'pages': pages,
+      'posts': posts,
+      'templates': templates,
+      'assets': assets
+    };
+  }
+}
+
+/// Combines all config sections into one entity.
+class Config {
+  SiteConfig site;
+  DirectoryConfig dir;
+  Config(this.site, this.dir);
+}
+
+/// Creates a new config instance from environment variable settings.
+///
+/// This method is pretty gnarly, but the config is consolidated here
+/// instead of having the codebase littered with `getenv()` calls.
+/// This made it easier to inject config as a dependency and create unit tests.
+Config createConfig({bool allowEmpty = false}) {
+  var siteConfig = SiteConfig(
+    url: getenv('URL', allowEmpty: allowEmpty),
+    title: getenv('TITLE', allowEmpty: allowEmpty),
+    description: getenv('DESCRIPTION', allowEmpty: allowEmpty),
+    author: getenv('AUTHOR', allowEmpty: allowEmpty),
+    language: getenv('LANGUAGE', fallback: 'en', allowEmpty: allowEmpty),
+  );
+
+  var dirConfig = DirectoryConfig(
+    public: getenv('PUBLIC_DIR',
+        fallback: 'public', allowEmpty: allowEmpty, isDirectory: true),
+    pages: getenv('PAGES_DIR',
+        fallback: 'pages', allowEmpty: allowEmpty, isDirectory: true),
+    posts: getenv('POSTS_DIR',
+        fallback: 'posts', allowEmpty: allowEmpty, isDirectory: true),
+    templates: getenv('TEMPLATES_DIR',
+        fallback: 'templates', allowEmpty: allowEmpty, isDirectory: true),
+    assets: getenv('ASSETS_DIR',
+        fallback: 'assets', allowEmpty: allowEmpty, isDirectory: true),
+  );
+
+  return Config(siteConfig, dirConfig);
+}

@@ -1,5 +1,6 @@
 import 'package:intl/intl.dart' show DateFormat;
 import 'package:dotenv/dotenv.dart' as dotenv;
+import 'package:path/path.dart' as p;
 import 'tota_exception.dart';
 
 /// Converts a [date] to ISO-8601 format (YYYY-MM-DD).
@@ -32,3 +33,9 @@ String getenv(String key,
   }
   return value;
 }
+
+/// References the current working directory URI.
+final Uri _rootDir = Uri.directory(p.current);
+
+/// Resolves a [path] relative to the root directory.
+Uri resolveDir(String path) => _rootDir.resolve(path);

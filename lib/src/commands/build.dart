@@ -20,21 +20,8 @@ class BuildCommand extends Command {
         argResults['verbose'] ? Logger.verbose() : Logger.standard();
 
     try {
-      // Delete existing public directory.
-      logger.stdout('Deleting public directory');
-      logger.trace(config.publicDir.toFilePath());
-      await tota.deletePublicDir();
-
-      // Build pages, posts, etc.
-      Progress progress = logger.progress('Generating static files');
-      List<Uri> files = await tota.buildFiles();
-      files.forEach((file) => logger.trace(file.path));
-      progress.finish(showTiming: true);
-
-      // Copy assets folder to public directory.
-      logger.stdout('Copying assets directory to public directory');
-      logger.trace(config.publicDir.toFilePath());
-      await tota.copyAssets();
+      Config config = tota.createConfig();
+      await tota.compile(config);
 
       logger.stdout('All ${logger.ansi.emphasized('done')}.');
     } catch (e) {

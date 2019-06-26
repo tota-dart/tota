@@ -3,6 +3,7 @@ import 'package:cli_util/cli_logging.dart';
 import 'package:dotenv/dotenv.dart' as dotenv;
 import '../../tota.dart' as tota;
 import '../tota_exception.dart';
+import '../config.dart';
 
 class NewCommand extends Command {
   final name = 'new';
@@ -23,6 +24,16 @@ class NewCommand extends Command {
         defaultsTo: false);
   }
 
+  /// Converts a page type [name] into a Tota resource type.
+  tota.Resource getResourceType(String name) {
+    switch (name) {
+      case 'post':
+        return tota.Resource.post;
+      default:
+        return tota.Resource.page;
+    }
+  }
+
   void run() async {
     dotenv.load();
 
@@ -30,24 +41,17 @@ class NewCommand extends Command {
         argResults['verbose'] ? Logger.verbose() : Logger.standard();
 
     try {
+      Config config = tota.createConfig();
+
       String title = argResults.rest.isEmpty ? '' : argResults.rest[0];
       if (title.isEmpty) {
         throw TotaException('Title is required');
       }
 
-      Progress progress = logger.progress('Generating file');
-      tota.Resource resource;
-      switch (argResults['type']) {
-        case 'post':
-          resource = tota.Resource.post;
-          break;
-        default:
-          resource = tota.Resource.page;
-      }
-      Uri file =
-          await tota.createPage(resource, title, force: argResults['force']);
-      logger.trace(file.path);
-      progress.finish(showTiming: true);
+      await tota.createPage(config, title,
+          resource: getResourceType(argResults['type']),
+          force: argResults['force'],
+          logger: logger);
 
       logger.stdout('File ${logger.ansi.emphasized('created')}.');
     } catch (e) {

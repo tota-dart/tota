@@ -4,7 +4,6 @@ import 'package:front_matter/front_matter.dart' as fm;
 import 'package:markdown/markdown.dart';
 import 'package:mustache/mustache.dart';
 import 'tota_exception.dart';
-import 'config.dart';
 import 'utils.dart';
 
 const _defaultHtmlTemplate = 'base.mustache';
@@ -58,7 +57,7 @@ Future<List<Uri>> listDirectory(Uri directory, {String extension}) async {
 /// Converts Markdown body to HTML, then renders an HTML file
 /// in the public directory using the desired HTML template.
 Future<List<Uri>> generateHtmlFiles(
-    {List<Uri> files, Uri sourceDir, publicDir}) async {
+    {List<Uri> files, Uri sourceDir, publicDir, templatesDir}) async {
   List<Uri> generated = [];
   for (var srcFile in files) {
     // Read the file and parse front matter & content.
@@ -88,13 +87,12 @@ Future<List<Uri>> generateHtmlFiles(
       if (p.extension(templateFileName).isEmpty) {
         templateFileName = p.setExtension(templateFileName, '.mustache');
       }
-      var templateFile =
-          File.fromUri(config.templatesDir.resolve(templateFileName));
+      var templateFile = File.fromUri(templatesDir.resolve(templateFileName));
       if (!await templateFile.exists()) {
         throw TotaException('HTML template not found: `$templateFileName`');
       }
       var template = Template(await templateFile.readAsString(),
-          partialResolver: getTemplatePartial);
+          partialResolver: partialResolver(templatesDir.resolve('_partials')));
 
       // Create a file URI relative to source directory, in order to
       // generate the same nested directory structure in the public directory.
@@ -128,22 +126,24 @@ Future<List<Uri>> generateHtmlFiles(
   return generated;
 }
 
-/// Resolves the template for a partial.
+/// Returns a function that resolves the partial template.
 ///
 /// Recursively searches the `_partials` directory for a file
 /// that matches the partial [name].
-Template getTemplatePartial(String name) {
-  var directory = Directory.fromUri(config.templatesDir.resolve('_partials'));
-  if (!directory.existsSync()) {
-    throw TotaException("template partials directory doesn't exist");
-  }
-  var partial = '';
-  for (var file in directory.listSync(recursive: true)) {
-    if (file is File && p.basenameWithoutExtension(file.path) == name) {
-      partial = file.readAsStringSync();
+Function(String name) partialResolver(Uri partialsDir) {
+  return (String name) {
+    var directory = Directory.fromUri(partialsDir);
+    if (!directory.existsSync()) {
+      throw TotaException("template partials directory not found");
     }
-  }
-  return Template(partial);
+    var partial = '';
+    for (var file in directory.listSync(recursive: true)) {
+      if (file is File && p.basenameWithoutExtension(file.path) == name) {
+        partial = file.readAsStringSync();
+      }
+    }
+    return Template(partial);
+  };
 }
 
 /// Copies a directory from a [source] to a [destination] URI.

@@ -8,8 +8,11 @@ import 'package:tota/src/generator.dart';
 import 'utils.dart';
 
 void main() {
+  Config testConfig;
+
   setUp(() {
     dotenv.load('test/fixtures/.env');
+    testConfig = createConfig(allowEmpty: true);
   });
 
   group('createSourceFile', () {
@@ -80,43 +83,35 @@ void main() {
     });
   });
 
-  group('getTemplatePartial', () {
-    setUp(() {
-      config.allowEmpty = true;
-    });
-
-    tearDown(() {
-      config.allowEmpty = false;
-    });
-
-    test('loads file in directory', () {
-      withTempDir((path) {
-        config.rootDir = Uri.directory(path);
+  group('partialResolver', () {
+    test('loads partial file in directory', () {
+      return withTempDir((path) async {
+        var templatesDir = Uri.directory(p.join(path, 'templates/'));
+        var partialsPath = templatesDir.resolve('_partials/');
 
         // Create test files.
-        var partialsPath = p.join(path, 'templates', '_partials');
-        Directory(partialsPath)..createSync(recursive: true);
+        await Directory.fromUri(partialsPath).create(recursive: true);
+        await File.fromUri(partialsPath.resolve('foo.mustache'))
+            .writeAsString('<h1>{{ foo }}</h1>');
 
-        File(p.join(partialsPath, 'foo.mustache'))
-          ..writeAsStringSync('<h1>{{ foo }}</h1>');
-
-        var partial = getTemplatePartial('foo');
+        var resolver = partialResolver(templatesDir.resolve('_partials/'));
+        var partial = resolver('foo');
         expect(partial.renderString({'foo': 'bar'}), equals('<h1>bar</h1>'));
       });
     });
 
     test('loads nested file in directory', () {
-      withTempDir((path) {
-        config.rootDir = Uri.directory(path);
+      return withTempDir((path) async {
+        var templatesDir = Uri.directory(p.join(path, 'templates/'));
+        var partialsPath = templatesDir.resolve('_partials/nested/');
 
         // Create test files.
-        var partialsPath = p.join(path, 'templates', '_partials', 'nested');
-        Directory(partialsPath)..createSync(recursive: true);
+        await Directory.fromUri(partialsPath).create(recursive: true);
+        await File.fromUri(partialsPath.resolve('foo.mustache'))
+            .writeAsString('<h1>{{ foo }}</h1>');
 
-        File(p.join(partialsPath, 'foo.mustache'))
-          ..writeAsStringSync('<h1>{{ foo }}</h1>');
-
-        var partial = getTemplatePartial('foo');
+        var resolver = partialResolver(templatesDir.resolve('_partials/'));
+        var partial = resolver('foo');
         expect(partial.renderString({'foo': 'bar'}), equals('<h1>bar</h1>'));
       });
     });
@@ -125,23 +120,14 @@ void main() {
   group('generateHtmlFiles', () {
     var testIds = <String>['foo', 'bar', 'baz', 'qux'];
 
-    setUp(() {
-      config.allowEmpty = true;
-    });
-
-    tearDown(() {
-      config.allowEmpty = false;
-    });
-
     test('generates HTML files', () {
       return withTempDir((path) async {
-        config.rootDir = Uri.directory(path);
-
         var t = createTestFiles(path, testIds);
         var result = await generateHtmlFiles(
             files: t['files'],
             sourceDir: t['pagesDir'],
-            publicDir: t['publicDir']);
+            publicDir: t['publicDir'],
+            templatesDir: t['templatesDir']);
 
         expect(result.length, testIds.length);
 
@@ -157,8 +143,6 @@ void main() {
 
     test('public directory structure resembles source directory', () {
       return withTempDir((path) async {
-        config.rootDir = Uri.directory(path);
-
         var t = createTestFiles(path, testIds);
 
         // Create nested directory in source directory.
@@ -174,7 +158,8 @@ void main() {
         var result = await generateHtmlFiles(
             files: <Uri>[fileUri],
             sourceDir: t['pagesDir'],
-            publicDir: t['publicDir']);
+            publicDir: t['publicDir'],
+            templatesDir: t['templatesDir']);
 
         var expectedFile = File(
             p.join(t['publicDir'].toFilePath(), 'path/to/nested/page.html'));
@@ -188,8 +173,6 @@ void main() {
   group('copyDirectory()', () {
     test('copies assets directory to public directory', () {
       return withTempDir((path) async {
-        config.rootDir = Uri.directory(path);
-
         var t = createTestFiles(path, <String>['foo']);
         var targetUri = t['publicDir'].resolve('assets/');
         await copyDirectory(t['assetsDir'], targetUri);
