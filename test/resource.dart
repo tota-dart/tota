@@ -105,14 +105,16 @@ void main() {
     test('creates an archive page', () {
       withTempDir((path) async {
         var t = createTestFiles(path, ['foo', 'bar']);
+        var today = DateTime.now();
         var posts = <Resource>[
-          Resource(url: 'foo', title: 'foo', date: DateTime.now())
+          Resource(url: 'foo', title: 'foo', date: today),
+          Resource(url: 'bar', title: 'bar', date: today.add(Duration(days: 1)))
         ];
 
         // Create archive template.
         File.fromUri(t['templatesDir'].resolve('archive.mustache'))
           ..writeAsStringSync('{{#posts}}'
-              '<h1>{{title}}</h1>'
+              '<p>{{title}}</p>'
               '{{/posts}}');
 
         await createPostsArchive(posts,
@@ -122,7 +124,7 @@ void main() {
 
         var file = File.fromUri(t['publicDir'].resolve('posts/index.html'));
         expect(file.existsSync(), equals(true));
-        expect(file.readAsStringSync(), equals('<h1>foo</h1>'));
+        expect(file.readAsStringSync(), equals('<p>bar</p><p>foo</p>'));
       });
     });
   });
