@@ -42,14 +42,11 @@ Stream listDirectory(Uri directory, {bool recursive = false}) {
 }
 
 /// Parses Markdown file to separate front matter & content.
-Future<Map<String, dynamic>> parseSourceFile(Uri fileUri,
-    {omitContent: false}) async {
+Future<Map<String, dynamic>> parseSourceFile(Uri fileUri) async {
   try {
     fm.FrontMatterDocument parsed = await fm.parseFile(fileUri.toFilePath());
     final fileMap = Map<String, dynamic>.from(parsed.data);
-    if (!omitContent) {
-      fileMap['content'] = parsed.content;
-    }
+    fileMap['content'] = parsed.content;
     return fileMap;
   } catch (e) {
     throw TotaException('${e.message} `${fileUri.toFilePath()}`');
