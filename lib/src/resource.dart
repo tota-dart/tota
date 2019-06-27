@@ -12,6 +12,19 @@ const _markdownFileExtension = '.md';
 /// Represents the type of resource.
 enum ResourceType { page, post }
 
+/// A resource that was created by the compiler.
+class Resource {
+  final String url, title, description, date, language, author;
+
+  Resource(
+      {@required this.url,
+      @required this.title,
+      this.description,
+      this.date,
+      this.language,
+      this.author});
+}
+
 /// Scaffolds a new page file with desired [title].
 Future<Uri> createResource(Uri sourceDir, String title, {bool force}) async {
   // Slugify title to create a file name.
@@ -25,28 +38,6 @@ Future<Uri> createResource(Uri sourceDir, String title, {bool force}) async {
 
   return fs.createSourceFile(sourceDir.resolve(fileName),
       metadata: metadata, content: 'Hello, world!', force: force);
-}
-
-/// A resource that was created by the compiler.
-class Resource {
-  String title, description, date, language, author;
-
-  Resource(
-      {@required this.title,
-      this.description,
-      this.date,
-      this.language,
-      this.author});
-
-  Map<String, String> toJson() {
-    return <String, String>{
-      'title': title,
-      'description': description,
-      'date': date,
-      'language': language,
-      'author': author,
-    };
-  }
 }
 
 /// Compiles the files in the pages directory.
@@ -77,8 +68,8 @@ Future<List<Resource>> compileResources(
       // Load HTML template.
       Template template =
           await fs.loadTemplate(resource['template'], templatesDir);
-      // Accumulate template variables.
-      Map<String, dynamic> templateLocals = {
+      // Accumulate template local variables.
+      Map<String, dynamic> locals = {
         'page': resource,
         'site': config.site.toJson(),
         'content': content,
@@ -89,20 +80,53 @@ Future<List<Resource>> compileResources(
         'author': resource['author'] ?? config.site.author,
       };
 
+      // Calculate sub-directory destination within the public directory.
+      Uri destinationUri;
+      switch (resourceType) {
+        case ResourceType.post:
+          destinationUri = publicDir.resolve(config.dir.posts);
+          break;
+        default:
+          destinationUri = publicDir;
+      }
+
       // Use a relative file path from source directory path to ensure the
       // same nested directory structure is created in the public directory.
       var relativePath = p.relative(entity.path, from: sourceDir.toFilePath());
       // Render template and save generated HTML file.
-      await fs.createHtmlFile(Uri.file(relativePath), publicDir,
-          content: template.renderString(templateLocals));
+      var file = await fs.createHtmlFile(Uri.file(relativePath), destinationUri,
+          content: template.renderString(locals));
 
       compiled.add(Resource(
-          title: templateLocals['title'],
-          description: templateLocals['description'],
-          date: templateLocals['date'],
-          author: templateLocals['author'],
-          language: templateLocals['language']));
+          url: p.relative(p.withoutExtension(file.path),
+              from: publicDir.toFilePath()),
+          title: locals['title'],
+          description: locals['description'],
+          date: locals['date'],
+          author: locals['author'],
+          language: locals['language']));
     }
   }
   return compiled;
+}
+
+/// Creates an archive page for posts.
+Future<void> createPostsArchive(List<Resource> posts,
+    {@required Config config,
+    @required Uri templatesDir,
+    @required Uri publicDir}) async {
+  if (posts.isEmpty) {
+    return;
+  }
+  Template template = await fs.loadTemplate('archive', templatesDir);
+  Map<String, dynamic> locals = {
+    'site': config.site.toJson(),
+    'posts': posts,
+    'title': config.site.title,
+    'description': config.site.description,
+    'language': config.site.language,
+  };
+  Uri publicPostsDir = publicDir.resolve(config.dir.posts);
+  File file = File.fromUri(publicPostsDir.resolve('index.html'));
+  await file.writeAsString(template.renderString(locals));
 }

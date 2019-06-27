@@ -6,7 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
-- Language property to template locals.
+- Posts archive page generation.
+- Site config to template locals.
 - Ability to omit template file extension.
 
 ## [0.3.0] - 2019-06-21

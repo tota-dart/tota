@@ -73,14 +73,17 @@ Future<void> compile(Config config, {Logger logger}) async {
   // Posts are nested one-level deep inside the public directory.
   // This will be reflected in the URL path for the blog.
   Uri postsDir = resolveDir(config.dir.posts);
-  Uri publicPostsDir = publicDir.resolve(config.dir.posts);
-  await compileResources(
+  var posts = await compileResources(
       sourceDir: postsDir,
-      publicDir: publicPostsDir,
+      publicDir: publicDir,
       templatesDir: templatesDir,
       config: config,
       resourceType: ResourceType.post);
   progress.finish(showTiming: true);
+
+  // Create posts archive page.
+  await createPostsArchive(posts,
+      config: config, templatesDir: templatesDir, publicDir: publicDir);
 
   // Copy assets directory to public directory.
   Uri publicAssetsDir = publicDir.resolve(config.dir.assets);

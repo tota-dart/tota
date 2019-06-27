@@ -75,13 +75,13 @@ Future<Template> loadTemplate(String filename, Uri templatesDir) async {
 }
 
 /// Saves the generated HTML file in the public directory.
-Future<void> createHtmlFile(Uri srcFile, publicDir, {String content}) async {
+Future<File> createHtmlFile(Uri srcFile, publicDir, {String content}) async {
   var filename = p.setExtension(srcFile.toFilePath(), '.html');
   var file = File.fromUri(publicDir.resolve(filename));
   // Create sub-directories in public directory before writing the file.
   await Directory(p.dirname(file.path)).create(recursive: true);
   // Write content to file.
-  await file.writeAsString(content);
+  return await file.writeAsString(content);
 }
 
 /// Returns a function that resolves the partial template.
