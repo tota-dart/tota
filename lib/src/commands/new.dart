@@ -25,12 +25,12 @@ class NewCommand extends Command {
   }
 
   /// Converts a page type [name] into a Tota resource type.
-  tota.Resource getResourceType(String name) {
+  tota.ResourceType getResourceType(String name) {
     switch (name) {
       case 'post':
-        return tota.Resource.post;
+        return tota.ResourceType.post;
       default:
-        return tota.Resource.page;
+        return tota.ResourceType.page;
     }
   }
 
@@ -49,7 +49,7 @@ class NewCommand extends Command {
       }
 
       await tota.createPage(config, title,
-          resource: getResourceType(argResults['type']),
+          resourceType: getResourceType(argResults['type']),
           force: argResults['force'],
           logger: logger);
 

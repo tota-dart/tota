@@ -1,5 +1,4 @@
 import 'package:meta/meta.dart';
-import 'package:path/path.dart' as p;
 import 'utils.dart';
 
 /// Represents the site configuration settings.

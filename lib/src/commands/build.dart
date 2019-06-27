@@ -25,7 +25,13 @@ class BuildCommand extends Command {
 
       logger.stdout('All ${logger.ansi.emphasized('done')}.');
     } catch (e) {
-      logger.stderr(logger.ansi.error(e.message));
+      switch (e.runtimeType) {
+        case tota.TotaException:
+          logger.stderr(logger.ansi.error(e.message));
+          break;
+        default:
+          rethrow;
+      }
     }
   }
 }

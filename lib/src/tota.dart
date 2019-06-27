@@ -5,7 +5,7 @@ import 'package:cli_util/cli_logging.dart';
 import 'config.dart';
 import 'starter.dart';
 import 'resource.dart';
-import 'generator.dart' show removeDir, copyDirectory;
+import 'fs.dart' as fs;
 import 'tota_exception.dart';
 import 'utils.dart';
 
@@ -30,13 +30,15 @@ Future<void> createProject(Uri directory) async {
 /// The default [type] of resource to create is "page". Will throw an
 /// exception if file already exists, but [force] will override this.
 Future<void> createPage(Config config, String title,
-    {Resource resource = Resource.page, bool force, Logger logger}) async {
+    {ResourceType resourceType = ResourceType.page,
+    bool force,
+    Logger logger}) async {
   logger ??= Logger.standard();
 
   Progress progress = logger.progress('Generating file');
   Uri file;
-  switch (resource) {
-    case Resource.post:
+  switch (resourceType) {
+    case ResourceType.post:
       file = await createResource(resolveDir(config.dir.posts), title,
           force: force);
       break;
@@ -56,23 +58,33 @@ Future<void> compile(Config config, {Logger logger}) async {
   Uri publicDir = resolveDir(config.dir.public);
   logger.stdout('Deleting public directory');
   logger.trace(publicDir.toFilePath());
-  await removeDir(publicDir, recursive: true);
+  await fs.removeDirectory(publicDir, recursive: true);
 
   Progress progress = logger.progress('Generating static files');
   Uri pagesDir = resolveDir(config.dir.pages);
   Uri templatesDir = resolveDir(config.dir.templates);
-  await compileResources(pagesDir, publicDir, templatesDir);
+  await compileResources(
+      sourceDir: pagesDir,
+      publicDir: publicDir,
+      templatesDir: templatesDir,
+      config: config,
+      resourceType: ResourceType.page);
 
   // Posts are nested one-level deep inside the public directory.
   // This will be reflected in the URL path for the blog.
   Uri postsDir = resolveDir(config.dir.posts);
   Uri publicPostsDir = publicDir.resolve(config.dir.posts);
-  await compileResources(postsDir, publicPostsDir, templatesDir);
+  await compileResources(
+      sourceDir: postsDir,
+      publicDir: publicPostsDir,
+      templatesDir: templatesDir,
+      config: config,
+      resourceType: ResourceType.post);
   progress.finish(showTiming: true);
 
   // Copy assets directory to public directory.
   Uri publicAssetsDir = publicDir.resolve(config.dir.assets);
   logger.stdout('Copying assets folder');
   logger.trace(publicAssetsDir.toFilePath());
-  copyDirectory(resolveDir(config.dir.assets), publicAssetsDir);
+  fs.copyDirectory(resolveDir(config.dir.assets), publicAssetsDir);
 }

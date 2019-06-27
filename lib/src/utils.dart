@@ -1,6 +1,7 @@
 import 'package:intl/intl.dart' show DateFormat;
 import 'package:dotenv/dotenv.dart' as dotenv;
 import 'package:path/path.dart' as p;
+import 'package:markdown/markdown.dart';
 import 'tota_exception.dart';
 
 /// Converts a [date] to ISO-8601 format (YYYY-MM-DD).
@@ -39,3 +40,12 @@ final Uri _rootDir = Uri.directory(p.current);
 
 /// Resolves a [path] relative to the root directory.
 Uri resolveDir(String path) => _rootDir.resolve(path);
+
+/// Converts Markdown [text] to HTML.
+String convertMarkdownToHtml(String text) =>
+    markdownToHtml(text, inlineSyntaxes: [
+      InlineHtmlSyntax(),
+    ], blockSyntaxes: [
+      HeaderWithIdSyntax(),
+      TableSyntax(),
+    ]);
