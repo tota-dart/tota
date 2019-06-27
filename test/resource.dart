@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:test/test.dart';
-import 'package:path/path.dart' as p;
 import 'package:dotenv/dotenv.dart' as dotenv;
 import 'package:tota/src/config.dart';
 import 'package:tota/tota.dart';
@@ -49,7 +48,6 @@ void main() {
     test('compiles files in pages directory', () {
       withTempDir((path) async {
         var t = createTestFiles(path, ['foo', 'bar']);
-        var config = createConfig();
 
         var result = await compileResources(
             sourceDir: t['pagesDir'],
@@ -65,7 +63,6 @@ void main() {
     test('public directory structure resembles source directory', () {
       withTempDir((path) async {
         var t = createTestFiles(path, ['foo', 'bar']);
-        var config = createConfig();
 
         // Create nested file in source directory.
         File.fromUri(t['pagesDir'].resolve('path/to/nested/page.md'))
@@ -92,11 +89,12 @@ void main() {
     test('throws an error if archive template is not found', () {
       return withTempDir((path) async {
         var t = createTestFiles(path, ['foo', 'bar']);
-        var config = createConfig();
-        var posts = <Resource>[Resource()];
+        var posts = <Resource>[
+          Resource(url: 'foo', title: 'foo', date: DateTime.now())
+        ];
 
         var result = createPostsArchive(posts,
-            config: config,
+            config: createConfig(),
             templatesDir: t['templatesDir'],
             publicDir: t['publicDir']);
 
@@ -107,8 +105,9 @@ void main() {
     test('creates an archive page', () {
       withTempDir((path) async {
         var t = createTestFiles(path, ['foo', 'bar']);
-        var config = createConfig();
-        var posts = <Resource>[Resource(title: 'foo')];
+        var posts = <Resource>[
+          Resource(url: 'foo', title: 'foo', date: DateTime.now())
+        ];
 
         // Create archive template.
         File.fromUri(t['templatesDir'].resolve('archive.mustache'))
@@ -116,8 +115,8 @@ void main() {
               '<h1>{{title}}</h1>'
               '{{/posts}}');
 
-        var result = await createPostsArchive(posts,
-            config: config,
+        await createPostsArchive(posts,
+            config: createConfig(),
             templatesDir: t['templatesDir'],
             publicDir: t['publicDir']);
 
