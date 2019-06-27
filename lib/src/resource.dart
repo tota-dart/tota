@@ -14,13 +14,14 @@ enum ResourceType { page, post }
 
 /// A resource that was created by the compiler.
 class Resource {
-  final String url, title, description, date, language, author;
+  final DateTime date;
+  final String url, title, description, language, author;
 
   Resource(
       {@required this.url,
       @required this.title,
+      @required this.date,
       this.description,
-      this.date,
       this.language,
       this.author});
 }
@@ -69,13 +70,16 @@ Future<List<Resource>> compileResources(
       Template template =
           await fs.loadTemplate(resource['template'], templatesDir);
       // Accumulate template local variables.
+      DateTime date = resource.containsKey('date')
+          ? DateTime.parse(resource['date'])
+          : DateTime.now();
       Map<String, dynamic> locals = {
         'page': resource,
         'site': config.site.toJson(),
         'content': content,
         'title': resource['title'] ?? config.site.title,
         'description': resource['description'] ?? config.site.description,
-        'date': resource['date'] ?? formatDate(DateTime.now()),
+        'date': formatDate(date),
         'language': resource['language'] ?? config.site.language,
         'author': resource['author'] ?? config.site.author,
       };
@@ -98,11 +102,11 @@ Future<List<Resource>> compileResources(
           content: template.renderString(locals));
 
       compiled.add(Resource(
+          date: date,
           url: p.relative(p.withoutExtension(file.path),
               from: publicDir.toFilePath()),
           title: locals['title'],
           description: locals['description'],
-          date: locals['date'],
           author: locals['author'],
           language: locals['language']));
     }
@@ -119,11 +123,14 @@ Future<void> createPostsArchive(List<Resource> posts,
     return;
   }
   Template template = await fs.loadTemplate('archive', templatesDir);
+  // Sort posts by date (newest first).
+  posts.sort((a, b) => b.date.compareTo(a.date));
   Map<String, dynamic> locals = {
     'site': config.site.toJson(),
     'posts': posts,
     'title': config.site.title,
     'description': config.site.description,
+    'author': config.site.author,
     'language': config.site.language,
   };
   Uri publicPostsDir = publicDir.resolve(config.dir.posts);
