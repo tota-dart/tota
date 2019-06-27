@@ -135,5 +135,6 @@ Future<void> createPostsArchive(List<Resource> posts,
   };
   Uri publicPostsDir = publicDir.resolve(config.dir.posts);
   File file = File.fromUri(publicPostsDir.resolve('index.html'));
+  await file.create(recursive: true);
   await file.writeAsString(template.renderString(locals));
 }

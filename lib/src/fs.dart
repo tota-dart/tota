@@ -12,9 +12,8 @@ const _defaultHtmlTemplate = 'base.mustache';
 /// Creates a new [file] in the source directory with optional [metadata]
 /// (front matter) and body [content].
 Future<Uri> createSourceFile(Uri fileUri,
-    {Map<String, dynamic> metadata,
-    String content = '',
-    bool force = false}) async {
+    {Map<String, dynamic> metadata, String content = '', bool force}) async {
+  force ??= false;
   File file = File.fromUri(fileUri);
   if (await file.exists()) {
     if (force) {

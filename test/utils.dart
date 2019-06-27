@@ -32,36 +32,36 @@ Future<T> withTempDir<T>(Future<T> fn(String path)) async {
 /// to run the test suite against.
 Map<String, dynamic> createTestFiles(String tempDirPath, List<String> fileIds) {
   Uri tempDir = Uri.directory(tempDirPath);
-
-  // Create pages source directory.
   Uri pagesDir = tempDir.resolve('pages/');
-  Directory.fromUri(pagesDir).createSync();
 
   // Generate test pages.
   var files = List<Uri>.generate(
       fileIds.length, (i) => pagesDir.resolve('test-${fileIds[i]}.md'));
+
   // Write file contents.
   files.asMap().forEach((i, uri) {
-    var file = File.fromUri(uri);
-    file.writeAsStringSync('---\n'
-        'test: "${fileIds[i]}"\n'
-        'public: true\n'
-        '---\n'
-        '# Hello, world!');
+    File.fromUri(uri)
+      ..createSync(recursive: true)
+      ..writeAsStringSync('---\n'
+          'test: "${fileIds[i]}"\n'
+          'public: true\n'
+          '---\n'
+          '# Hello, world!');
   });
 
   // Create test HTML templates.
   var templatesDir = tempDir.resolve('templates/');
-  Directory.fromUri(templatesDir.resolve('_partials/'))
-      .createSync(recursive: true);
+  File.fromUri(templatesDir.resolve('_partials/head.mustache'))
+    ..createSync(recursive: true)
+    ..writeAsStringSync('{{partial}}');
   File.fromUri(templatesDir.resolve('base.mustache'))
-      .writeAsStringSync('{{ content }}');
+    ..writeAsStringSync('{{content}}');
 
   // Create asset directory and asset file.
   var assetsDir = tempDir.resolve('assets/');
-  Directory.fromUri(assetsDir).createSync();
   File.fromUri(assetsDir.resolve('index.js'))
-      .writeAsStringSync('console.log("foo")');
+    ..createSync(recursive: true)
+    ..writeAsStringSync('console.log("foo")');
 
   return <String, dynamic>{
     'files': files,
