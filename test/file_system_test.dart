@@ -3,7 +3,7 @@ import 'package:test/test.dart';
 import 'package:path/path.dart' as p;
 import 'package:dotenv/dotenv.dart' as dotenv;
 import 'package:tota/tota.dart';
-import 'package:tota/src/fs.dart';
+import 'package:tota/src/file_system.dart';
 import 'utils.dart';
 
 void main() {

@@ -90,7 +90,11 @@ void main() {
       return withTempDir((path) async {
         var t = createTestFiles(path, ['foo', 'bar']);
         var posts = <Resource>[
-          Resource(url: 'foo', title: 'foo', date: DateTime.now())
+          Resource(
+              type: ResourceType.post,
+              path: 'foo',
+              title: 'foo',
+              date: DateTime.now())
         ];
 
         var result = createPostsArchive(posts,
@@ -107,8 +111,13 @@ void main() {
         var t = createTestFiles(path, ['foo', 'bar']);
         var today = DateTime.now();
         var posts = <Resource>[
-          Resource(url: 'foo', title: 'foo', date: today),
-          Resource(url: 'bar', title: 'bar', date: today.add(Duration(days: 1)))
+          Resource(
+              type: ResourceType.post, path: 'foo', title: 'foo', date: today),
+          Resource(
+              type: ResourceType.post,
+              path: 'bar',
+              title: 'bar',
+              date: today.add(Duration(days: 1)))
         ];
 
         // Create archive template.

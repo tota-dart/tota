@@ -3,7 +3,7 @@ import 'package:slugify/slugify.dart';
 import 'package:path/path.dart' as p;
 import 'package:mustache/mustache.dart' show Template;
 import 'package:meta/meta.dart';
-import 'fs.dart' as fs;
+import 'file_system.dart' as fs;
 import 'utils.dart';
 import 'config.dart';
 
@@ -14,16 +14,22 @@ enum ResourceType { page, post }
 
 /// A resource that was created by the compiler.
 class Resource {
+  final ResourceType type;
   final DateTime date;
-  final String url, title, description, language, author;
+  final String path, title, description, language, author;
 
   Resource(
-      {@required this.url,
-      @required this.title,
+      {@required this.type = ResourceType.page,
       @required this.date,
+      @required this.path,
+      @required this.title,
       this.description,
       this.language,
       this.author});
+
+  bool get isPage => type == ResourceType.page;
+
+  bool get isPost => type == ResourceType.post;
 }
 
 /// Scaffolds a new page file with desired [title].
@@ -84,26 +90,22 @@ Future<List<Resource>> compileResources(
         'author': resource['author'] ?? config.site.author,
       };
 
-      // Calculate sub-directory destination within the public directory.
-      Uri destinationUri;
-      switch (resourceType) {
-        case ResourceType.post:
-          destinationUri = publicDir.resolve(config.dir.posts);
-          break;
-        default:
-          destinationUri = publicDir;
-      }
+      // Create a sub-directory in public directory for posts.
+      Uri destination = resourceType == ResourceType.post
+          ? publicDir.resolve(config.dir.posts)
+          : publicDir;
 
       // Use a relative file path from source directory path to ensure the
       // same nested directory structure is created in the public directory.
       var relativePath = p.relative(entity.path, from: sourceDir.toFilePath());
       // Render template and save generated HTML file.
-      var file = await fs.createHtmlFile(Uri.file(relativePath), destinationUri,
+      var file = await fs.createHtmlFile(Uri.file(relativePath), destination,
           content: template.renderString(locals));
 
       compiled.add(Resource(
+          type: resourceType,
           date: date,
-          url: p.relative(p.withoutExtension(file.path),
+          path: p.relative(p.withoutExtension(file.path),
               from: publicDir.toFilePath()),
           title: locals['title'],
           description: locals['description'],

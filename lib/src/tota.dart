@@ -5,7 +5,7 @@ import 'package:cli_util/cli_logging.dart';
 import 'config.dart';
 import 'starter.dart';
 import 'resource.dart';
-import 'fs.dart' as fs;
+import 'file_system.dart' as fs;
 import 'tota_exception.dart';
 import 'utils.dart';
 
