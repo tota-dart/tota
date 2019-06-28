@@ -21,7 +21,7 @@ class BuildCommand extends Command {
 
     try {
       Config config = tota.createConfig();
-      await tota.compile(config);
+      await tota.compile(config, logger: logger);
 
       logger.stdout('All ${logger.ansi.emphasized('done')}.');
     } catch (e) {

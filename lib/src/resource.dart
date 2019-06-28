@@ -3,6 +3,7 @@ import 'package:slugify/slugify.dart';
 import 'package:path/path.dart' as p;
 import 'package:mustache/mustache.dart' show Template;
 import 'package:meta/meta.dart';
+import 'package:cli_util/cli_logging.dart';
 import 'file_system.dart' as fs;
 import 'utils.dart';
 import 'config.dart';
@@ -19,7 +20,7 @@ class Resource {
   final String path, title, description, language, author;
 
   Resource(
-      {@required this.type = ResourceType.page,
+      {@required this.type,
       @required this.date,
       @required this.path,
       @required this.title,
@@ -33,28 +34,34 @@ class Resource {
 }
 
 /// Scaffolds a new page file with desired [title].
-Future<Uri> createResource(Uri sourceDir, String title, {bool force}) async {
+Future<Resource> createResource(ResourceType type, String title,
+    {@required Config config, bool force}) async {
+  Uri sourceDir =
+      type == ResourceType.post ? config.postsDirUri : config.pagesDirUri;
   // Slugify title to create a file name.
-  var fileName = p.setExtension(Slugify(title), '.md');
+  var filename = p.setExtension(Slugify(title), '.md');
+  var uri = sourceDir.resolve(filename);
+  var today = DateTime.now();
   var metadata = <String, dynamic>{
     'title': title,
-    'date': formatDate(DateTime.now()),
+    'date': formatDate(today),
     'template': 'base',
     'public': false,
   };
 
-  return fs.createSourceFile(sourceDir.resolve(fileName),
+  await fs.createSourceFile(uri,
       metadata: metadata, content: 'Hello, world!', force: force);
+
+  return Resource(
+      type: type, date: today, title: title, path: uri.toFilePath());
 }
 
 /// Compiles the files in the pages directory.
-Future<List<Resource>> compileResources(
-    {@required Uri sourceDir,
-    @required Uri publicDir,
-    @required Uri templatesDir,
-    @required Config config,
-    ResourceType resourceType}) async {
+Future<List<Resource>> compileResources(ResourceType type,
+    {@required Config config, Logger logger}) async {
   var compiled = <Resource>[];
+  Uri sourceDir =
+      type == ResourceType.post ? config.postsDirUri : config.pagesDirUri;
 
   /// Lists all Markdown files in the pages directory.
   await for (FileSystemEntity entity
@@ -74,7 +81,7 @@ Future<List<Resource>> compileResources(
       String content = convertMarkdownToHtml(resource['content']);
       // Load HTML template.
       Template template =
-          await fs.loadTemplate(resource['template'], templatesDir);
+          await fs.loadTemplate(resource['template'], config.templatesDirUri);
       // Accumulate template local variables.
       DateTime date = resource.containsKey('date')
           ? DateTime.parse(resource['date'])
@@ -91,9 +98,9 @@ Future<List<Resource>> compileResources(
       };
 
       // Create a sub-directory in public directory for posts.
-      Uri destination = resourceType == ResourceType.post
-          ? publicDir.resolve(config.dir.posts)
-          : publicDir;
+      // This will be reflected in the URL path for the posts.
+      Uri destination = config.publicDirUri
+          .resolve(type == ResourceType.post ? config.postsDir : '');
 
       // Use a relative file path from source directory path to ensure the
       // same nested directory structure is created in the public directory.
@@ -103,14 +110,18 @@ Future<List<Resource>> compileResources(
           content: template.renderString(locals));
 
       compiled.add(Resource(
-          type: resourceType,
+          type: type,
           date: date,
           path: p.relative(p.withoutExtension(file.path),
-              from: publicDir.toFilePath()),
+              from: config.publicDirUri.toFilePath()),
           title: locals['title'],
           description: locals['description'],
           author: locals['author'],
           language: locals['language']));
+
+      if (logger != null) {
+        logger.trace(file.path);
+      }
     }
   }
   return compiled;
@@ -135,7 +146,7 @@ Future<void> createPostsArchive(List<Resource> posts,
     'author': config.site.author,
     'language': config.site.language,
   };
-  Uri publicPostsDir = publicDir.resolve(config.dir.posts);
+  Uri publicPostsDir = publicDir.resolve(config.postsDir);
   File file = File.fromUri(publicPostsDir.resolve('index.html'));
   await file.create(recursive: true);
   await file.writeAsString(template.renderString(locals));

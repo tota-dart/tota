@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:tota/tota.dart';
 
 /// Creates a temp directory in the system temp directory, whose name will be
 /// 'tota_' with characters appended to it to make a unique name.
@@ -26,13 +27,30 @@ Future<T> withTempDir<T>(Future<T> fn(String path)) async {
   }
 }
 
+/// Creates a test config with [path] as root directory.
+Config createTestConfig(String path) {
+  return createConfig(
+    url: 'https://test',
+    title: 'test',
+    description: 'test',
+    author: 'test',
+    language: 'en',
+    rootDir: path,
+    publicDir: 'public/',
+    pagesDir: 'pages/',
+    postsDir: 'posts/',
+    templatesDir: 'templates/',
+    assetsDir: 'assets/',
+  );
+}
+
 /// Creates test files in the temp directory.
 ///
 /// Bootstraps a directory in the [tempDir] path, with test files
 /// to run the test suite against.
-Map<String, dynamic> createTestFiles(String tempDirPath, List<String> fileIds) {
-  Uri tempDir = Uri.directory(tempDirPath);
-  Uri pagesDir = tempDir.resolve('pages/');
+Map<String, dynamic> createTestFiles(Config config, List<String> fileIds) {
+  Uri tempDir = Uri.directory(config.rootDir);
+  Uri pagesDir = tempDir.resolve(config.pagesDir);
 
   // Generate test pages.
   var files = List<Uri>.generate(
@@ -50,7 +68,7 @@ Map<String, dynamic> createTestFiles(String tempDirPath, List<String> fileIds) {
   });
 
   // Create test HTML templates.
-  var templatesDir = tempDir.resolve('templates/');
+  var templatesDir = tempDir.resolve(config.templatesDir);
   File.fromUri(templatesDir.resolve('_partials/head.mustache'))
     ..createSync(recursive: true)
     ..writeAsStringSync('{{partial}}');
@@ -58,7 +76,7 @@ Map<String, dynamic> createTestFiles(String tempDirPath, List<String> fileIds) {
     ..writeAsStringSync('{{content}}');
 
   // Create asset directory and asset file.
-  var assetsDir = tempDir.resolve('assets/');
+  var assetsDir = tempDir.resolve(config.assetsDir);
   File.fromUri(assetsDir.resolve('index.js'))
     ..createSync(recursive: true)
     ..writeAsStringSync('console.log("foo")');
@@ -68,6 +86,6 @@ Map<String, dynamic> createTestFiles(String tempDirPath, List<String> fileIds) {
     'pagesDir': pagesDir,
     'templatesDir': templatesDir,
     'assetsDir': assetsDir,
-    'publicDir': tempDir.resolve('public/')
+    'publicDir': tempDir.resolve(config.publicDir)
   };
 }

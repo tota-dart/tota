@@ -11,10 +11,10 @@ const _defaultHtmlTemplate = 'base.mustache';
 ///
 /// Creates a new [file] in the source directory with optional [metadata]
 /// (front matter) and body [content].
-Future<Uri> createSourceFile(Uri fileUri,
+Future<Uri> createSourceFile(Uri uri,
     {Map<String, dynamic> metadata, String content = '', bool force}) async {
   force ??= false;
-  File file = File.fromUri(fileUri);
+  File file = File.fromUri(uri);
   if (await file.exists()) {
     if (force) {
       // Overwrite file.
@@ -28,7 +28,7 @@ Future<Uri> createSourceFile(Uri fileUri,
     content = '${createFrontMatter(metadata)}\n\n$content';
   }
   await file.writeAsString(content);
-  return fileUri;
+  return uri;
 }
 
 /// Lists all files in a [directory] URI.

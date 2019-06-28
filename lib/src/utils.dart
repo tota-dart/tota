@@ -35,12 +35,6 @@ String getenv(String key,
   return value;
 }
 
-/// References the current working directory URI.
-final Uri _rootDir = Uri.directory(p.current);
-
-/// Resolves a [path] relative to the root directory.
-Uri resolveDir(String path) => _rootDir.resolve(path);
-
 /// Converts Markdown [text] to HTML.
 String convertMarkdownToHtml(String text) =>
     markdownToHtml(text, inlineSyntaxes: [

@@ -1,9 +1,10 @@
 import 'package:meta/meta.dart';
+import 'package:path/path.dart' as p;
 import 'utils.dart';
 
 /// Represents the site configuration settings.
-class SiteConfig {
-  SiteConfig({
+class _SiteConfig {
+  _SiteConfig({
     @required this.url,
     @required this.title,
     @required this.description,
@@ -24,54 +25,73 @@ class SiteConfig {
   }
 }
 
-/// Represents the directory configuration settings.
-class DirectoryConfig {
-  DirectoryConfig({
-    @required this.public,
-    @required this.pages,
-    @required this.posts,
-    @required this.templates,
-    @required this.assets,
+/// Contains all application configuration settings.
+class Config {
+  final _SiteConfig site;
+  final String rootDir, publicDir, pagesDir, postsDir, templatesDir, assetsDir;
+
+  Config({
+    @required this.site,
+    @required this.rootDir,
+    @required this.publicDir,
+    @required this.pagesDir,
+    @required this.postsDir,
+    @required this.templatesDir,
+    @required this.assetsDir,
   });
 
-  final String public, pages, posts, templates, assets;
+  /// Resolves a [path] relative to the root directory.
+  Uri _resolveDir(String path) => Uri.directory(rootDir).resolve(path);
 
-  Map<String, String> toJson() {
-    return <String, String>{
-      'public': public,
-      'pages': pages,
-      'posts': posts,
-      'templates': templates,
-      'assets': assets
-    };
-  }
-}
+  /// Resolves a URI to the public directory.
+  Uri get publicDirUri => _resolveDir(publicDir);
 
-/// Combines all config sections into one entity.
-class Config {
-  SiteConfig site;
-  DirectoryConfig dir;
-  Config(this.site, this.dir);
+  /// Resolves a URI to the pages directory.
+  Uri get pagesDirUri => _resolveDir(pagesDir);
+
+  /// Resolves a URI to the posts directory.
+  Uri get postsDirUri => _resolveDir(postsDir);
+
+  /// Resolves a URI to the templates directory.
+  Uri get templatesDirUri => _resolveDir(templatesDir);
+
+  /// Resolves a URI to the assets directory.
+  Uri get assetsDirUri => _resolveDir(assetsDir);
 }
 
 /// Creates a new config instance from environment variable settings.
-Config createConfig() {
-  var siteConfig = SiteConfig(
-    url: getenv('URL'),
-    title: getenv('TITLE'),
-    description: getenv('DESCRIPTION'),
-    author: getenv('AUTHOR'),
-    language: getenv('LANGUAGE', fallback: 'en'),
+Config createConfig(
+    {String url,
+    title,
+    description,
+    author,
+    language,
+    rootDir,
+    publicDir,
+    pagesDir,
+    postsDir,
+    templatesDir,
+    assetsDir}) {
+  var site = _SiteConfig(
+    url: url ?? getenv('URL'),
+    title: title ?? getenv('TITLE'),
+    description: description ?? getenv('DESCRIPTION'),
+    author: author ?? getenv('AUTHOR'),
+    language: language ?? getenv('LANGUAGE', fallback: 'en'),
   );
 
-  var dirConfig = DirectoryConfig(
-    public: getenv('PUBLIC_DIR', fallback: 'public', isDirectory: true),
-    pages: getenv('PAGES_DIR', fallback: 'pages', isDirectory: true),
-    posts: getenv('POSTS_DIR', fallback: 'posts', isDirectory: true),
-    templates:
+  return Config(
+    site: site,
+    rootDir: rootDir ?? p.current,
+    publicDir: publicDir ??
+        getenv('PUBLIC_DIR', fallback: 'public', isDirectory: true),
+    pagesDir:
+        pagesDir ?? getenv('PAGES_DIR', fallback: 'pages', isDirectory: true),
+    postsDir:
+        postsDir ?? getenv('POSTS_DIR', fallback: 'posts', isDirectory: true),
+    templatesDir: templatesDir ??
         getenv('TEMPLATES_DIR', fallback: 'templates', isDirectory: true),
-    assets: getenv('ASSETS_DIR', fallback: 'assets', isDirectory: true),
+    assetsDir: assetsDir ??
+        getenv('ASSETS_DIR', fallback: 'assets', isDirectory: true),
   );
-
-  return Config(siteConfig, dirConfig);
 }
