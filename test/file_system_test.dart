@@ -167,9 +167,10 @@ void main() {
   group('copyDirectory', () {
     test('copies assets directory to public directory', () {
       return withTempDir((path) async {
-        var t = createTestFiles(path, <String>['foo']);
-        var targetUri = t['publicDir'].resolve('assets/');
-        await copyDirectory(t['assetsDir'], targetUri);
+        var config = createTestConfig(path);
+        var t = createTestFiles(config, <String>['foo']);
+        var targetUri = config.publicDirUri.resolve('assets/');
+        await copyDirectory(config.assetsDirUri, targetUri);
 
         // Destination directory exists.
         expect(Directory.fromUri(targetUri).exists(), completion(equals(true)));
