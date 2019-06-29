@@ -128,11 +128,12 @@ Future<List<Resource>> compileResources(ResourceType type,
         tags = List<String>.from(resource['tags']);
       }
 
+      var publicPath = p.relative(p.withoutExtension(file.path),
+          from: config.publicDirUri.toFilePath());
       compiled.add(Resource(
         type: type,
         date: date,
-        path: p.relative(p.withoutExtension(file.path),
-            from: config.publicDirUri.toFilePath()),
+        path: '/$publicPath',
         title: locals['title'],
         description: locals['description'],
         author: locals['author'],
