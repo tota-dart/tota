@@ -150,12 +150,12 @@ Future<List<Resource>> compileResources(ResourceType type,
 
 // Creates an archive file from list of posts.
 Future<File> _createArchiveFile(Uri uri, List<Resource> posts,
-    {@required Config config, Logger logger}) async {
+    {@required Config config, Logger logger, String tag}) async {
   // Create template locals.
   Map<String, dynamic> locals = {
     'site': config.site.toJson(),
     'posts': posts,
-    'title': config.site.title,
+    'title': tag ?? config.site.title,
     'description': config.site.description,
     'author': config.site.author,
     'language': config.site.language,
@@ -203,6 +203,7 @@ Future<void> createTagArchives(List<Resource> resources,
     // Sort posts by date (newest first).
     posts.sort((a, b) => a.date.compareTo(b.date));
     var tagUri = config.publicDirUri.resolve('tags/$tag.html');
-    await _createArchiveFile(tagUri, posts, config: config, logger: logger);
+    await _createArchiveFile(tagUri, posts,
+        config: config, logger: logger, tag: tag);
   }
 }
