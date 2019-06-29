@@ -1,9 +1,10 @@
 import 'package:args/command_runner.dart';
 import 'package:cli_util/cli_logging.dart';
 import 'package:dotenv/dotenv.dart' as dotenv;
+
 import '../../tota.dart' as tota;
-import '../tota_exception.dart';
 import '../config.dart';
+import '../tota_exception.dart';
 
 class NewCommand extends Command {
   final name = 'new';
@@ -41,7 +42,7 @@ class NewCommand extends Command {
         argResults['verbose'] ? Logger.verbose() : Logger.standard();
 
     try {
-      Config config = tota.createConfigEnv();
+      Config config = tota.loadConfig();
 
       String title = argResults.rest.isEmpty ? '' : argResults.rest[0];
       if (title.isEmpty) {

@@ -1,7 +1,9 @@
 import 'dart:io';
-import 'package:path/path.dart' as p;
+
 import 'package:front_matter/front_matter.dart' as fm;
 import 'package:mustache/mustache.dart';
+import 'package:path/path.dart' as p;
+
 import 'tota_exception.dart';
 import 'utils.dart';
 
@@ -48,7 +50,7 @@ Future<Map<String, dynamic>> parseSourceFile(Uri fileUri) async {
     fileMap['content'] = parsed.content;
     return fileMap;
   } catch (e) {
-    throw TotaException('${e.message} `${fileUri.toFilePath()}`');
+    throw TotaException('unable to parse file: ${fileUri.toFilePath()}');
   }
 }
 

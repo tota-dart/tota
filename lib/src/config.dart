@@ -1,8 +1,9 @@
 import 'package:meta/meta.dart';
 import 'package:path/path.dart' as p;
+
 import 'utils.dart';
 
-/// Represents the site configuration settings.
+/// Configuration settings for the site.
 class _SiteConfig {
   _SiteConfig({
     @required this.url,
@@ -25,13 +26,23 @@ class _SiteConfig {
   }
 }
 
+/// Configuration settings for posts.
+class _PostsConfig {
+  String permalink;
+  String dateFormat;
+
+  _PostsConfig({@required this.dateFormat, this.permalink});
+}
+
 /// Contains all application configuration settings.
 class Config {
   final _SiteConfig site;
+  final _PostsConfig posts;
   final String rootDir, publicDir, pagesDir, postsDir, templatesDir, assetsDir;
 
   Config({
     @required this.site,
+    @required this.posts,
     @required this.rootDir,
     @required this.publicDir,
     @required this.pagesDir,
@@ -60,18 +71,21 @@ class Config {
 }
 
 /// Creates config from supplied parameters.
-Config createConfig(
-        {String url,
-        title,
-        description,
-        author,
-        language,
-        rootDir,
-        publicDir,
-        pagesDir,
-        postsDir,
-        templatesDir,
-        assetsDir}) =>
+Config createConfig({
+  String url,
+  title,
+  description,
+  author,
+  language,
+  rootDir,
+  publicDir,
+  pagesDir,
+  postsDir,
+  templatesDir,
+  assetsDir,
+  dateFormat,
+  permalink,
+}) =>
     Config(
         site: _SiteConfig(
             url: url,
@@ -79,6 +93,7 @@ Config createConfig(
             description: description,
             author: author,
             language: language),
+        posts: _PostsConfig(dateFormat: dateFormat, permalink: permalink),
         rootDir: rootDir,
         publicDir: publicDir,
         pagesDir: pagesDir,
@@ -86,17 +101,20 @@ Config createConfig(
         templatesDir: templatesDir,
         assetsDir: assetsDir);
 
-/// Creates config from environment variable values.
-Config createConfigEnv() => createConfig(
-    url: getenv('URL'),
-    title: getenv('TITLE'),
-    description: getenv('DESCRIPTION'),
-    author: getenv('AUTHOR'),
-    language: getenv('LANGUAGE', fallback: 'en'),
-    rootDir: p.current,
-    publicDir: getenv('PUBLIC_DIR', fallback: 'public', isDirectory: true),
-    pagesDir: getenv('PAGES_DIR', fallback: 'pages', isDirectory: true),
-    postsDir: getenv('POSTS_DIR', fallback: 'posts', isDirectory: true),
-    templatesDir:
-        getenv('TEMPLATES_DIR', fallback: 'templates', isDirectory: true),
-    assetsDir: getenv('ASSETS_DIR', fallback: 'assets', isDirectory: true));
+/// Loads config from environment variable values.
+Config loadConfig() => createConfig(
+      url: getenv('URL'),
+      title: getenv('TITLE'),
+      description: getenv('DESCRIPTION'),
+      author: getenv('AUTHOR'),
+      language: getenv('LANGUAGE', fallback: 'en'),
+      rootDir: p.current,
+      publicDir: getenv('PUBLIC_DIR', fallback: 'public', isDirectory: true),
+      pagesDir: getenv('PAGES_DIR', fallback: 'pages', isDirectory: true),
+      postsDir: getenv('POSTS_DIR', fallback: 'posts', isDirectory: true),
+      templatesDir:
+          getenv('TEMPLATES_DIR', fallback: 'templates', isDirectory: true),
+      assetsDir: getenv('ASSETS_DIR', fallback: 'assets', isDirectory: true),
+      dateFormat: getenv('DATE_FORMAT', fallback: 'YYYY-MM-DD'),
+      permalink: getenv('PERMALINK', allowEmpty: true),
+    );

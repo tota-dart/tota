@@ -1,16 +1,13 @@
 import 'dart:io';
-import 'package:test/test.dart';
+
 import 'package:path/path.dart' as p;
-import 'package:dotenv/dotenv.dart' as dotenv;
-import 'package:tota/tota.dart';
+import 'package:test/test.dart';
 import 'package:tota/src/file_system.dart';
+import 'package:tota/tota.dart';
+
 import 'utils.dart';
 
 void main() {
-  setUp(() {
-    dotenv.load('test/fixtures/.env');
-  });
-
   group('createSourceFile', () {
     test('creates a new file', () {
       withTempDir((path) async {
@@ -19,9 +16,8 @@ void main() {
         await createSourceFile(Uri.file(file.path),
             metadata: <String, String>{'foo': 'bar'}, content: 'foo');
 
-        expect(file.exists(), completion(equals(true)));
-        expect(file.readAsString(),
-            completion(equals('---\nfoo: bar\n---\n\nfoo')));
+        expect(file.existsSync(), isTrue);
+        expect(file.readAsStringSync(), contains('---\nfoo: bar\n---\n\nfoo'));
       });
     });
 
@@ -49,17 +45,10 @@ void main() {
 
   group('listDirectory', () {
     test('lists all files in a directory', () {
-      withTempDir((path) async {
-        var nums = List<int>.generate(5, (i) => i);
-
-        // Create test files in temp dir.
-        for (var num in nums) {
-          await File(p.join(path, 'test-$num.md'))
-            ..writeAsString('foo');
-        }
-
-        var result = await listDirectory(Uri.directory(path)).toList();
-        expect(result.length, equals(nums.length));
+      withFixtures((config) async {
+        var result =
+            await listDirectory(config.pagesDirUri, recursive: true).toList();
+        expect(result.length, greaterThan(3));
       });
     });
 
@@ -166,34 +155,24 @@ void main() {
 
   group('copyDirectory', () {
     test('copies assets directory to public directory', () {
-      return withTempDir((path) async {
-        var config = createTestConfig(path);
-        var t = createTestFiles(config, <String>['foo']);
-        var targetUri = config.publicDirUri.resolve('assets/');
-        await copyDirectory(config.assetsDirUri, targetUri);
+      withFixtures((config) async {
+        await copyDirectory(
+            config.assetsDirUri, config.publicDirUri.resolve('assets/'));
 
-        // Destination directory exists.
-        expect(Directory.fromUri(targetUri).exists(), completion(equals(true)));
-
-        var file = File.fromUri(targetUri.resolve('index.js'));
-        expect(file.exists(), completion(equals(true)));
-        expect(file.readAsString(), completion(equals('console.log("foo")')));
+        var file = File.fromUri(config.publicDirUri.resolve('assets/index.js'));
+        expect(file.existsSync(), isTrue);
+        expect(file.readAsStringSync(), contains('console.log("foo")'));
       });
     });
   });
 
   group('removeDirectory', () {
     test('deletes a directory', () {
-      withTempDir((path) async {
-        // Create test directory
-        var dir = Uri.directory(p.join(path, 'delete-me/'));
-        await Directory.fromUri(dir).create();
-        await File.fromUri(dir.resolve('nested/foo.md'))
-            .create(recursive: true);
+      withFixtures((config) async {
+        await removeDirectory(config.pagesDirUri, recursive: true);
 
-        await removeDirectory(dir, recursive: true);
-
-        expect(Directory.fromUri(dir).exists(), completion(equals(false)));
+        var file = File.fromUri(config.pagesDirUri);
+        expect(file.existsSync(), isFalse);
       });
     });
   });

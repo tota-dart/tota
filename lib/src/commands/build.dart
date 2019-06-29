@@ -1,6 +1,7 @@
-import 'package:dotenv/dotenv.dart' as dotenv;
 import 'package:args/command_runner.dart';
 import 'package:cli_util/cli_logging.dart';
+import 'package:dotenv/dotenv.dart' as dotenv;
+
 import '../../tota.dart' as tota;
 import '../config.dart';
 
@@ -20,7 +21,7 @@ class BuildCommand extends Command {
         argResults['verbose'] ? Logger.verbose() : Logger.standard();
 
     try {
-      Config config = tota.createConfigEnv();
+      Config config = tota.loadConfig();
       await tota.compile(config, logger: logger);
 
       logger.stdout('All ${logger.ansi.emphasized('done')}.');

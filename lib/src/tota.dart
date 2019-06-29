@@ -1,14 +1,15 @@
 library tota;
 
 import 'dart:io';
+
 import 'package:cli_util/cli_logging.dart';
 import 'package:meta/meta.dart';
+
 import 'config.dart';
-import 'starter.dart';
-import 'resource.dart';
 import 'file_system.dart' as fs;
+import 'resource.dart';
+import 'starter.dart';
 import 'tota_exception.dart';
-import 'utils.dart';
 
 /// Initializes a new project in [directory].
 Future<void> createProject(Uri directory) async {

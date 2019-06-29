@@ -1,12 +1,15 @@
 import 'dart:io';
-import 'package:slugify/slugify.dart';
-import 'package:path/path.dart' as p;
-import 'package:mustache/mustache.dart' show Template;
-import 'package:meta/meta.dart';
+
 import 'package:cli_util/cli_logging.dart';
+import 'package:intl/intl.dart' show DateFormat;
+import 'package:meta/meta.dart';
+import 'package:mustache/mustache.dart' show Template;
+import 'package:path/path.dart' as p;
+import 'package:slugify/slugify.dart';
+
+import 'config.dart';
 import 'file_system.dart' as fs;
 import 'utils.dart';
-import 'config.dart';
 
 const _markdownFileExtension = '.md';
 
@@ -44,7 +47,7 @@ Future<Resource> createResource(ResourceType type, String title,
   var today = DateTime.now();
   var metadata = <String, dynamic>{
     'title': title,
-    'date': formatDate(today),
+    'date': DateFormat(config.posts.dateFormat).format(today),
     'template': 'base',
     'public': false,
   };
@@ -92,7 +95,7 @@ Future<List<Resource>> compileResources(ResourceType type,
         'content': content,
         'title': resource['title'] ?? config.site.title,
         'description': resource['description'] ?? config.site.description,
-        'date': formatDate(date),
+        'date': DateFormat(config.posts.dateFormat).format(date),
         'language': resource['language'] ?? config.site.language,
         'author': resource['author'] ?? config.site.author,
       };

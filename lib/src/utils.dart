@@ -1,11 +1,7 @@
-import 'package:intl/intl.dart' show DateFormat;
 import 'package:dotenv/dotenv.dart' as dotenv;
-import 'package:path/path.dart' as p;
 import 'package:markdown/markdown.dart';
-import 'tota_exception.dart';
 
-/// Converts a [date] to ISO-8601 format (YYYY-MM-DD).
-String formatDate(DateTime date) => DateFormat('yyyy-MM-dd').format(date);
+import 'tota_exception.dart';
 
 /// Converts a [Map] to a front matter string.
 ///

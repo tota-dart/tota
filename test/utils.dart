@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import 'package:tota/tota.dart';
 
 /// Creates a temp directory in the system temp directory, whose name will be
@@ -8,6 +9,11 @@ import 'package:tota/tota.dart';
 String _createSystemTempDir() {
   var tempDir = Directory.systemTemp.createTempSync('tota_');
   return tempDir.resolveSymbolicLinksSync();
+}
+
+/// Copies fixtures directory to [tempDir].
+ProcessResult _copyFixturesToTempDir(String tempDir) {
+  return Process.runSync('rsync', ['-a', 'test/fixtures/', tempDir]);
 }
 
 /// Creates a temporary directory and passes its path to [fn].
@@ -27,8 +33,27 @@ Future<T> withTempDir<T>(Future<T> fn(String path)) async {
   }
 }
 
+/// Creates a temporary directory with test fixtures and passes config to [fn].
+///
+/// Once the [Future] returned by [fn] completes, the temporary directory and
+/// all its contents are deleted. [fn] can also return `null`, in which case
+/// the temporary directory is deleted immediately afterwards.
+///
+/// Returns a future that completes to the value that the future returned from
+/// [fn] completes to.
+Future<T> withFixtures<T>(Future<T> fn(Config config)) async {
+  var tempDir = _createSystemTempDir();
+  var config = createTestConfig(tempDir);
+  _copyFixturesToTempDir(tempDir);
+  try {
+    return await fn(config);
+  } finally {
+    await Directory(tempDir).delete(recursive: true);
+  }
+}
+
 /// Creates a test config with [path] as root directory.
-Config createTestConfig(String path) {
+Config createTestConfig(String path, {String dateFormat}) {
   return createConfig(
     url: 'https://test',
     title: 'test',
@@ -41,51 +66,7 @@ Config createTestConfig(String path) {
     postsDir: 'posts/',
     templatesDir: 'templates/',
     assetsDir: 'assets/',
+    dateFormat: dateFormat ?? 'DD-MM-YYYY',
+    permalink: '',
   );
-}
-
-/// Creates test files in the temp directory.
-///
-/// Bootstraps a directory in the [tempDir] path, with test files
-/// to run the test suite against.
-Map<String, dynamic> createTestFiles(Config config, List<String> fileIds) {
-  Uri tempDir = Uri.directory(config.rootDir);
-  Uri pagesDir = tempDir.resolve(config.pagesDir);
-
-  // Generate test pages.
-  var files = List<Uri>.generate(
-      fileIds.length, (i) => pagesDir.resolve('test-${fileIds[i]}.md'));
-
-  // Write file contents.
-  files.asMap().forEach((i, uri) {
-    File.fromUri(uri)
-      ..createSync(recursive: true)
-      ..writeAsStringSync('---\n'
-          'test: "${fileIds[i]}"\n'
-          'public: true\n'
-          '---\n'
-          '# Hello, world!');
-  });
-
-  // Create test HTML templates.
-  var templatesDir = tempDir.resolve(config.templatesDir);
-  File.fromUri(templatesDir.resolve('_partials/head.mustache'))
-    ..createSync(recursive: true)
-    ..writeAsStringSync('{{partial}}');
-  File.fromUri(templatesDir.resolve('base.mustache'))
-    ..writeAsStringSync('{{content}}');
-
-  // Create asset directory and asset file.
-  var assetsDir = tempDir.resolve(config.assetsDir);
-  File.fromUri(assetsDir.resolve('index.js'))
-    ..createSync(recursive: true)
-    ..writeAsStringSync('console.log("foo")');
-
-  return <String, dynamic>{
-    'files': files,
-    'pagesDir': pagesDir,
-    'templatesDir': templatesDir,
-    'assetsDir': assetsDir,
-    'publicDir': tempDir.resolve(config.publicDir)
-  };
 }

@@ -6,7 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
-- Posts archive page generation.
+- Generates posts archive page.
+- Date format to config.
 - Site config to template locals.
 - Ability to omit template file extension.
 
