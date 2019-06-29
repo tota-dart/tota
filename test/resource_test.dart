@@ -84,7 +84,7 @@ void main() {
       });
     });
 
-    test('creates an archive page', () {
+    test('creates an archive page for posts', () {
       withFixtures((config) async {
         var posts = <Resource>[
           Resource(
@@ -99,6 +99,24 @@ void main() {
             File.fromUri(config.publicDirUri.resolve('posts/index.html'));
         expect(file.existsSync(), isTrue);
         expect(file.readAsStringSync(), equals('<a>foo</a>\n'));
+      });
+    });
+    test('creates an archive page for tags', () {
+      withFixtures((config) async {
+        var posts = <Resource>[
+          Resource(
+              title: 'foo',
+              path: 'foo',
+              date: DateTime.now(),
+              tags: ['foo', 'bar'],
+              type: ResourceType.post)
+        ];
+        await createTagArchives(posts, config: config);
+
+        var dir = await Directory.fromUri(config.publicDirUri.resolve('tags'))
+            .list()
+            .toList();
+        expect(dir.length, equals(2));
       });
     });
   });

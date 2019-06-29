@@ -6,6 +6,7 @@ import 'package:meta/meta.dart';
 import 'package:mustache/mustache.dart' show Template;
 import 'package:path/path.dart' as p;
 import 'package:slugify/slugify.dart';
+import 'package:yaml/yaml.dart' show YamlList;
 
 import 'config.dart';
 import 'file_system.dart' as fs;
@@ -21,15 +22,24 @@ class Resource {
   final ResourceType type;
   final DateTime date;
   final String path, title, description, language, author;
+  final List<String> _tags = [];
 
-  Resource(
-      {@required this.type,
-      @required this.date,
-      @required this.path,
-      @required this.title,
-      this.description,
-      this.language,
-      this.author});
+  Resource({
+    @required this.type,
+    @required this.date,
+    @required this.path,
+    @required this.title,
+    this.description,
+    this.language,
+    this.author,
+    List<String> tags,
+  }) {
+    if (tags != null) {
+      _tags.addAll(tags);
+    }
+  }
+
+  List<String> get tags => _tags;
 
   bool get isPage => type == ResourceType.page;
 
@@ -112,15 +122,23 @@ Future<List<Resource>> compileResources(ResourceType type,
       var file = await fs.createHtmlFile(Uri.file(relativePath), destination,
           content: template.renderString(locals));
 
+      // Create a list of tags.
+      List<String> tags;
+      if (resource['tags'] is YamlList) {
+        tags = List<String>.from(resource['tags']);
+      }
+
       compiled.add(Resource(
-          type: type,
-          date: date,
-          path: p.relative(p.withoutExtension(file.path),
-              from: config.publicDirUri.toFilePath()),
-          title: locals['title'],
-          description: locals['description'],
-          author: locals['author'],
-          language: locals['language']));
+        type: type,
+        date: date,
+        path: p.relative(p.withoutExtension(file.path),
+            from: config.publicDirUri.toFilePath()),
+        title: locals['title'],
+        description: locals['description'],
+        author: locals['author'],
+        language: locals['language'],
+        tags: tags,
+      ));
 
       if (logger != null) {
         logger.trace(file.path);
@@ -130,15 +148,10 @@ Future<List<Resource>> compileResources(ResourceType type,
   return compiled;
 }
 
-/// Creates a posts archive page.
-Future<void> createPostArchive(List<Resource> posts,
-    {@required Config config}) async {
-  if (posts.isEmpty) {
-    return;
-  }
-  // Sort resources by date (newest first).
-  posts.sort((a, b) => b.date.compareTo(a.date));
-
+// Creates an archive file from list of posts.
+Future<File> _createArchiveFile(Uri uri, List<Resource> posts,
+    {@required Config config, Logger logger}) async {
+  // Create template locals.
   Map<String, dynamic> locals = {
     'site': config.site.toJson(),
     'posts': posts,
@@ -147,11 +160,49 @@ Future<void> createPostArchive(List<Resource> posts,
     'author': config.site.author,
     'language': config.site.language,
   };
+  // Load template.
   Template template = await fs.loadTemplate('archive', config.templatesDirUri);
+  // Save file.
+  File file = File.fromUri(uri);
+  await file.create(recursive: true);
+  await file.writeAsString(template.renderString(locals));
+  if (logger != null) {
+    logger.trace(file.path);
+  }
+  return file;
+}
+
+/// Creates a posts archive page.
+Future<void> createPostArchive(List<Resource> posts,
+    {@required Config config, Logger logger}) async {
+  if (posts.isEmpty) {
+    return;
+  }
+  // Sort resources by date (newest first).
+  posts.sort((a, b) => b.date.compareTo(a.date));
 
   // Create the archive page in the posts public directory.
   Uri publicPostsDir = config.publicDirUri.resolve(config.postsDir);
-  File file = File.fromUri(publicPostsDir.resolve('index.html'));
-  await file.create(recursive: true);
-  await file.writeAsString(template.renderString(locals));
+  await _createArchiveFile(publicPostsDir.resolve('index.html'), posts,
+      config: config, logger: logger);
+}
+
+/// Creates archive pages for all tags used.
+Future<void> createTagArchives(List<Resource> resources,
+    {@required config, Logger logger}) async {
+  Set<String> tags = resources
+      .map((resource) => resource.tags)
+      .expand((tags) => tags)
+      .map((tag) => tag.toLowerCase())
+      .toSet();
+
+  for (var tag in tags) {
+    // Get posts that contain tag.
+    var posts =
+        resources.where((resource) => resource.tags.contains(tag)).toList();
+    // Sort posts by date (newest first).
+    posts.sort((a, b) => a.date.compareTo(b.date));
+    var tagUri = config.publicDirUri.resolve('tags/$tag.html');
+    await _createArchiveFile(tagUri, posts, config: config, logger: logger);
+  }
 }
