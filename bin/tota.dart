@@ -8,6 +8,7 @@ void main(List<String> args) {
     ..addCommand(InitCommand())
     ..addCommand(NewCommand())
     ..addCommand(BuildCommand())
+    ..addCommand(DeployCommand())
     ..run(args).catchError((error) {
       print(error);
       exit(64); // Exit code 64 indicates a usage error.

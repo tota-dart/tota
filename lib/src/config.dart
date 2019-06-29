@@ -28,21 +28,30 @@ class _SiteConfig {
 
 /// Configuration settings for posts.
 class _PostsConfig {
-  String permalink;
-  String dateFormat;
+  final String permalink;
+  final String dateFormat;
 
   _PostsConfig({@required this.dateFormat, this.permalink});
+}
+
+/// Configuration settings for deployment.
+class _DeployConfig {
+  final String netlifySite, netlifyToken;
+
+  _DeployConfig({this.netlifySite, this.netlifyToken});
 }
 
 /// Contains all application configuration settings.
 class Config {
   final _SiteConfig site;
   final _PostsConfig posts;
+  final _DeployConfig deploy;
   final String rootDir, publicDir, pagesDir, postsDir, templatesDir, assetsDir;
 
   Config({
     @required this.site,
     @required this.posts,
+    @required this.deploy,
     @required this.rootDir,
     @required this.publicDir,
     @required this.pagesDir,
@@ -85,6 +94,8 @@ Config createConfig({
   assetsDir,
   dateFormat,
   permalink,
+  netlifySite,
+  netlifyToken,
 }) =>
     Config(
         site: _SiteConfig(
@@ -94,6 +105,8 @@ Config createConfig({
             author: author,
             language: language),
         posts: _PostsConfig(dateFormat: dateFormat, permalink: permalink),
+        deploy:
+            _DeployConfig(netlifySite: netlifySite, netlifyToken: netlifyToken),
         rootDir: rootDir,
         publicDir: publicDir,
         pagesDir: pagesDir,
@@ -117,4 +130,6 @@ Config loadConfig() => createConfig(
       assetsDir: getenv('ASSETS_DIR', fallback: 'assets', isDirectory: true),
       dateFormat: getenv('DATE_FORMAT', fallback: 'YYYY-MM-DD'),
       permalink: getenv('PERMALINK', allowEmpty: true),
+      netlifySite: getenv('NETLIFY_SITE', allowEmpty: true),
+      netlifyToken: getenv('NETLIFY_TOKEN', allowEmpty: true),
     );

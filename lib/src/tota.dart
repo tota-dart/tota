@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:cli_util/cli_logging.dart';
 import 'package:meta/meta.dart';
+import 'package:tota/src/deploy/deploy_handler.dart';
 
 import 'config.dart';
 import 'file_system.dart' as fs;
@@ -71,4 +72,10 @@ Future<void> compile(Config config, {Logger logger}) async {
   logger.stdout('Copying assets folder');
   logger.trace(publicAssetsDir.toFilePath());
   fs.copyDirectory(config.assetsDirUri, publicAssetsDir);
+}
+
+Future<void> deploy(HostProvider host,
+    {@required Config config, Logger logger}) async {
+  DeployHandler handler = getDeployHandler(host, config);
+  handler.deploy(config.publicDirUri);
 }
