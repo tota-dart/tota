@@ -20,7 +20,7 @@ class BuildCommand extends Command {
         argResults['verbose'] ? Logger.verbose() : Logger.standard();
 
     try {
-      Config config = tota.createConfig();
+      Config config = tota.createConfigEnv();
       await tota.compile(config, logger: logger);
 
       logger.stdout('All ${logger.ansi.emphasized('done')}.');

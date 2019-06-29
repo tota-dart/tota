@@ -41,7 +41,7 @@ class NewCommand extends Command {
         argResults['verbose'] ? Logger.verbose() : Logger.standard();
 
     try {
-      Config config = tota.createConfig();
+      Config config = tota.createConfigEnv();
 
       String title = argResults.rest.isEmpty ? '' : argResults.rest[0];
       if (title.isEmpty) {

@@ -59,39 +59,44 @@ class Config {
   Uri get assetsDirUri => _resolveDir(assetsDir);
 }
 
-/// Creates a new config instance from environment variable settings.
+/// Creates config from supplied parameters.
 Config createConfig(
-    {String url,
-    title,
-    description,
-    author,
-    language,
-    rootDir,
-    publicDir,
-    pagesDir,
-    postsDir,
-    templatesDir,
-    assetsDir}) {
-  var site = _SiteConfig(
-    url: url ?? getenv('URL'),
-    title: title ?? getenv('TITLE'),
-    description: description ?? getenv('DESCRIPTION'),
-    author: author ?? getenv('AUTHOR'),
-    language: language ?? getenv('LANGUAGE', fallback: 'en'),
-  );
+        {String url,
+        title,
+        description,
+        author,
+        language,
+        rootDir,
+        publicDir,
+        pagesDir,
+        postsDir,
+        templatesDir,
+        assetsDir}) =>
+    Config(
+        site: _SiteConfig(
+            url: url,
+            title: title,
+            description: description,
+            author: author,
+            language: language),
+        rootDir: rootDir,
+        publicDir: publicDir,
+        pagesDir: pagesDir,
+        postsDir: postsDir,
+        templatesDir: templatesDir,
+        assetsDir: assetsDir);
 
-  return Config(
-    site: site,
-    rootDir: rootDir ?? p.current,
-    publicDir: publicDir ??
-        getenv('PUBLIC_DIR', fallback: 'public', isDirectory: true),
-    pagesDir:
-        pagesDir ?? getenv('PAGES_DIR', fallback: 'pages', isDirectory: true),
-    postsDir:
-        postsDir ?? getenv('POSTS_DIR', fallback: 'posts', isDirectory: true),
-    templatesDir: templatesDir ??
+/// Creates config from environment variable values.
+Config createConfigEnv() => createConfig(
+    url: getenv('URL'),
+    title: getenv('TITLE'),
+    description: getenv('DESCRIPTION'),
+    author: getenv('AUTHOR'),
+    language: getenv('LANGUAGE', fallback: 'en'),
+    rootDir: p.current,
+    publicDir: getenv('PUBLIC_DIR', fallback: 'public', isDirectory: true),
+    pagesDir: getenv('PAGES_DIR', fallback: 'pages', isDirectory: true),
+    postsDir: getenv('POSTS_DIR', fallback: 'posts', isDirectory: true),
+    templatesDir:
         getenv('TEMPLATES_DIR', fallback: 'templates', isDirectory: true),
-    assetsDir: assetsDir ??
-        getenv('ASSETS_DIR', fallback: 'assets', isDirectory: true),
-  );
-}
+    assetsDir: getenv('ASSETS_DIR', fallback: 'assets', isDirectory: true));
