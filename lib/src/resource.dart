@@ -130,17 +130,15 @@ Future<List<Resource>> compileResources(ResourceType type,
   return compiled;
 }
 
-/// Creates an archive page for posts.
-Future<void> createPostsArchive(List<Resource> posts,
-    {@required Config config,
-    @required Uri templatesDir,
-    @required Uri publicDir}) async {
+/// Creates a posts archive page.
+Future<void> createPostArchive(List<Resource> posts,
+    {@required Config config}) async {
   if (posts.isEmpty) {
     return;
   }
-  Template template = await fs.loadTemplate('archive', templatesDir);
-  // Sort posts by date (newest first).
+  // Sort resources by date (newest first).
   posts.sort((a, b) => b.date.compareTo(a.date));
+
   Map<String, dynamic> locals = {
     'site': config.site.toJson(),
     'posts': posts,
@@ -149,7 +147,10 @@ Future<void> createPostsArchive(List<Resource> posts,
     'author': config.site.author,
     'language': config.site.language,
   };
-  Uri publicPostsDir = publicDir.resolve(config.postsDir);
+  Template template = await fs.loadTemplate('archive', config.templatesDirUri);
+
+  // Create the archive page in the posts public directory.
+  Uri publicPostsDir = config.publicDirUri.resolve(config.postsDir);
   File file = File.fromUri(publicPostsDir.resolve('index.html'));
   await file.create(recursive: true);
   await file.writeAsString(template.renderString(locals));

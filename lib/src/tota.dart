@@ -58,10 +58,7 @@ Future<void> compile(Config config, {Logger logger}) async {
   progress.finish(showTiming: true);
 
   // Create posts archive page.
-  await createPostsArchive(posts,
-      config: config,
-      templatesDir: config.templatesDirUri,
-      publicDir: config.publicDirUri);
+  await createPostArchive(posts, config: config);
 
   // Copy assets directory to public directory.
   Uri publicAssetsDir = config.publicDirUri.resolve(config.assetsDir);

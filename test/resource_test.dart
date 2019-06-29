@@ -67,11 +67,39 @@ void main() {
 
   group('createPostsArchive', () {
     test('throws an error if archive template is not found', () {
-      // TODO
+      withFixtures((config) async {
+        await File.fromUri(config.templatesDirUri.resolve('archive.mustache'))
+            .delete();
+
+        var posts = <Resource>[
+          Resource(
+              title: 'foo',
+              path: 'foo',
+              date: DateTime.now(),
+              type: ResourceType.post)
+        ];
+
+        expect(() async => await createPostArchive(posts, config: config),
+            throwsA(TypeMatcher<TotaException>()));
+      });
     });
 
     test('creates an archive page', () {
-      // TODO
+      withFixtures((config) async {
+        var posts = <Resource>[
+          Resource(
+              title: 'foo',
+              path: 'foo',
+              date: DateTime.now(),
+              type: ResourceType.post)
+        ];
+        await createPostArchive(posts, config: config);
+
+        var file =
+            File.fromUri(config.publicDirUri.resolve('posts/index.html'));
+        expect(file.existsSync(), isTrue);
+        expect(file.readAsStringSync(), equals('<a>foo</a>\n'));
+      });
     });
   });
 }
