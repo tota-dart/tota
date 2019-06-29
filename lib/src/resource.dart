@@ -6,7 +6,6 @@ import 'package:meta/meta.dart';
 import 'package:mustache/mustache.dart' show Template;
 import 'package:path/path.dart' as p;
 import 'package:slugify/slugify.dart';
-import 'package:yaml/yaml.dart' show YamlList;
 
 import 'config.dart';
 import 'file_system.dart' as fs;
@@ -124,7 +123,7 @@ Future<List<Resource>> compileResources(ResourceType type,
 
       // Create a list of tags.
       List<String> tags;
-      if (resource['tags'] is YamlList) {
+      if (resource['tags'] is List) {
         tags = List<String>.from(resource['tags']);
       }
 
