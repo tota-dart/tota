@@ -1,7 +1,7 @@
 # Tota
 
-A simple and elegant framework for generating static sites.
-Great for personal websites, blogs, documentation, and more.
+Tota is a simple and elegant static-site generator, written in Dart.
+Great for personal websites, side-projects, blogs, documentation, and more.
 
 ## Install
 
@@ -19,8 +19,8 @@ pub global activate tota
 #### Setup your site
 
 ```bash
-tota init blog
-cd blog
+mkdir -p blog && cd blog
+tota init
 ```
 
 #### Create a new post
@@ -35,3 +35,5 @@ vim pages/hello-world.md
 ```bash
 tota build
 ```
+
+See `--help` for usage information.
