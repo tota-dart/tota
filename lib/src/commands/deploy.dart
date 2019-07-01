@@ -8,13 +8,13 @@ import '../config.dart';
 
 class DeployCommand extends Command {
   final name = 'deploy';
-  final description = 'Deploy site to host provider';
+  final description = 'Deploy site to hosting provider';
 
   DeployCommand() {
     argParser.addOption('provider',
         abbr: 'p',
         allowed: ['netlify'],
-        help: 'Host provider',
+        help: 'Hosting provider',
         defaultsTo: 'netlify');
     argParser.addFlag('verbose',
         abbr: 'v', negatable: false, help: 'Enable verbose logging.');
@@ -37,12 +37,10 @@ class DeployCommand extends Command {
     try {
       Config config = tota.loadConfig();
 
-      // Progress progress = logger.progress('Deploying site');
       await tota.deploy(getHostProvider(argResults['provider']),
           config: config, logger: logger);
-      // progress.finish(showTiming: true);
 
-      //logger.stdout('Project ${logger.ansi.emphasized('deployed')}.');
+      logger.stdout('Project ${logger.ansi.emphasized('deployed')}.');
     } catch (e) {
       switch (e.runtimeType) {
         case tota.TotaException:

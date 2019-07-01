@@ -21,6 +21,7 @@ dependencies:
   meta: ^1.1.7
   http: ^0.12.0+2
   crypto: ^2.0.6
+  pool: ^1.4.0
 dev_dependencies:
   test: ^1.6.4
 executables:

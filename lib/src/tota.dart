@@ -77,5 +77,5 @@ Future<void> compile(Config config, {Logger logger}) async {
 Future<void> deploy(HostProvider host,
     {@required Config config, Logger logger}) async {
   DeployHandler handler = getDeployHandler(host, config);
-  handler.deploy(config.publicDirUri);
+  await handler.deploy(config.publicDirUri, logger: logger);
 }
