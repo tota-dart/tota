@@ -74,7 +74,7 @@ Future<void> compile(Config config, {Logger logger}) async {
   fs.copyDirectory(config.assetsDirUri, publicAssetsDir);
 }
 
-Future<void> deploy(HostProvider host,
+Future<void> deploy(DeployHost host,
     {@required Config config, Logger logger}) async {
   DeployHandler handler = getDeployHandler(host, config);
   await handler.deploy(config.publicDirUri, logger: logger);
