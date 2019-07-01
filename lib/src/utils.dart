@@ -18,10 +18,10 @@ String createFrontMatter(Map<String, dynamic> data) {
 String getenv(String key,
     {String fallback,
     String prefix = 'TOTA_',
-    bool allowEmpty = false,
+    bool isRequired = true,
     bool isDirectory = false}) {
   var value = dotenv.env['$prefix$key'] ?? fallback;
-  if (value == null && !allowEmpty) {
+  if (isRequired && value == null) {
     throw TotaException('config not set: `$prefix$key`');
   }
   // Add a trailing slash to directories.

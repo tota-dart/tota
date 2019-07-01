@@ -129,7 +129,7 @@ Config loadConfig() => createConfig(
           getenv('TEMPLATES_DIR', fallback: 'templates', isDirectory: true),
       assetsDir: getenv('ASSETS_DIR', fallback: 'assets', isDirectory: true),
       dateFormat: getenv('DATE_FORMAT', fallback: 'YYYY-MM-DD'),
-      permalink: getenv('PERMALINK', allowEmpty: true),
-      netlifySite: getenv('NETLIFY_SITE', allowEmpty: true),
-      netlifyToken: getenv('NETLIFY_TOKEN', allowEmpty: true),
+      permalink: getenv('PERMALINK', isRequired: false),
+      netlifySite: getenv('NETLIFY_SITE', isRequired: false),
+      netlifyToken: getenv('NETLIFY_TOKEN', isRequired: false),
     );

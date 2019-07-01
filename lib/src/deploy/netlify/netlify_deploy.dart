@@ -22,7 +22,7 @@ class NetlifyDeploy {
   /// Deploy ID returned when creating a new deploy.
   String deployId;
 
-  /// List of required file digests to be uploaded.
+  /// List of digests of files/functions to be uploaded to Netlify.
   List<String> requiredFiles, requiredFunctions;
 
   NetlifyDeploy(this.files, this.functions);
@@ -50,14 +50,14 @@ class NetlifyDeploy {
     return data;
   }
 
-  /// Creates a new deploy.
+  /// Creates a new deploy with the Netlify API.
   Future<void> create(NetlifySite site, String accessToken,
       {Logger logger}) async {
     logger ??= Logger.standard();
     var response = await post(
         baseUri
             .resolve('sites/${site.siteId}/deploys?access_token=$accessToken'),
-        body: json.encode(this.toJson()),
+        body: json.encode(toJson()),
         headers: defaultHeaders);
     var body = json.decode(response.body);
     if (response.statusCode != 200) {

@@ -7,8 +7,6 @@ import 'package:http/http.dart';
 import 'package:tota/src/deploy/netlify/netlify_deploy_handler.dart';
 import 'package:tota/src/tota_exception.dart';
 
-/// deploys/1234/files/index.html
-
 /// A file to be uploaded to Netlify.
 ///
 /// Contains a digest of file path and SHA1 of file contents.
@@ -16,7 +14,7 @@ class NetlifyFile {
   /// URI of containing [directory].
   final Uri directory;
 
-  /// File [path] within [directory].
+  /// File [path] relative to [directory].
   final String path;
 
   /// SHA1 [digest] of file contents;
