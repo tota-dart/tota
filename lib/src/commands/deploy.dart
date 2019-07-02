@@ -20,15 +20,6 @@ class DeployCommand extends Command {
         abbr: 'v', negatable: false, help: 'Enable verbose logging.');
   }
 
-  DeployHost getDeployHost(String name) {
-    switch (name) {
-      case 'netlify':
-        return DeployHost.netlify;
-      default:
-        throw tota.TotaException('host not supported: `$name`');
-    }
-  }
-
   void run() async {
     dotenv.load();
     Logger logger =
@@ -37,7 +28,7 @@ class DeployCommand extends Command {
     try {
       Config config = tota.loadConfig();
 
-      await tota.deploy(getDeployHost(argResults['provider']),
+      await tota.deploy(_parseProvider(argResults['provider']),
           config: config, logger: logger);
 
       logger.stdout('Project ${logger.ansi.emphasized('deployed')}.');
@@ -50,5 +41,14 @@ class DeployCommand extends Command {
           rethrow;
       }
     }
+  }
+}
+
+DeployHost _parseProvider(String provider) {
+  switch (provider) {
+    case 'netlify':
+      return DeployHost.netlify;
+    default:
+      throw tota.TotaException('host not supported: `$provider`');
   }
 }

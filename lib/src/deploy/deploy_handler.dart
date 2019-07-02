@@ -4,7 +4,7 @@ import '../config.dart';
 import '../tota_exception.dart';
 import 'netlify/netlify_deploy_handler.dart';
 
-/// Types of supported hosting providers.
+/// Indicates the deployment hosting provider.
 enum DeployHost { netlify }
 
 /// Handles interactions with a hosting provider to deploy site.
