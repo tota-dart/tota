@@ -7,19 +7,21 @@ import 'netlify/netlify_deploy_handler.dart';
 /// Indicates the deployment hosting provider.
 enum DeployHost { netlify }
 
-/// Handles interactions with a hosting provider to deploy site.
+/// Handles interactions with a hosting provider to deploy a site.
 abstract class DeployHandler {
   /// Deploys files from [filesDir] and [functionsDir] to a hosting provider.
   Future<void> deploy(Uri filesDir, {Uri functionsDir, Logger logger});
 }
 
-/// Returns the correct deploy handler for the [host].
-DeployHandler getDeployHandler(DeployHost host, Config config) {
+/// Creates a deploy handler for the [host].
+DeployHandler createDeployHandler(DeployHost host, Config config) {
   switch (host) {
     case DeployHost.netlify:
-      var netlifySiteName =
-          config.deploy.netlifySite.replaceAll('.netlify.com', '');
-      return NetlifyDeployHandler(netlifySiteName, config.deploy.netlifyToken);
+      {
+        var siteName = config.deploy.netlifySite.replaceAll('.netlify.com', '');
+        return NetlifyDeployHandler(
+            siteName: siteName, accessToken: config.deploy.netlifyToken);
+      }
     default:
       throw TotaException('deployment method not supported');
   }

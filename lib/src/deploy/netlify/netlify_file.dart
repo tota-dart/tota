@@ -4,13 +4,17 @@ import 'dart:io';
 import 'package:cli_util/cli_logging.dart';
 import 'package:crypto/crypto.dart';
 import 'package:http/http.dart';
-import 'package:tota/src/deploy/netlify/netlify_deploy_handler.dart';
-import 'package:tota/src/tota_exception.dart';
+import 'package:meta/meta.dart';
+
+import '../../tota_exception.dart';
+import 'netlify_config.dart';
 
 /// A file to be uploaded to Netlify.
 ///
 /// Contains a digest of file path and SHA1 of file contents.
 class NetlifyFile {
+  final NetlifyConfig config;
+
   /// URI of containing [directory].
   final Uri directory;
 
@@ -20,7 +24,8 @@ class NetlifyFile {
   /// SHA1 [digest] of file contents;
   Digest digest;
 
-  NetlifyFile(this.directory, this.path);
+  NetlifyFile(
+      {@required this.config, @required this.directory, @required this.path});
 
   /// Reads the file as bytes.
   Future<List<int>> _readAsBytes() async {
@@ -34,15 +39,14 @@ class NetlifyFile {
   }
 
   /// Uploads the file to Netlify.
-  Future<NetlifyFile> upload(String deployId, accessToken,
-      {Logger logger}) async {
+  Future<NetlifyFile> upload(String deployId, {Logger logger}) async {
     Map<String, String> headers = {
       HttpHeaders.contentTypeHeader: 'application/octet-stream'
     };
     logger ??= Logger.standard();
     var response = await put(
-        baseUri
-            .resolve('deploys/$deployId/files/$path?access_token=$accessToken'),
+        config.baseUri.resolve(
+            'deploys/$deployId/files/$path?access_token=${config.accessToken}'),
         headers: headers,
         body: await _readAsBytes());
 
