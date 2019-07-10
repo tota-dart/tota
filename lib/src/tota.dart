@@ -49,8 +49,8 @@ Future<void> compile(Config config, {Logger logger}) async {
 
   // Empty the public directory.
   logger.stdout('Deleting public directory');
-  logger.trace(config.publicDirUri.toFilePath());
-  await fs.removeDirectory(config.publicDirUri, recursive: true);
+  logger.trace(config.publicDir.toFilePath());
+  await fs.removeDirectory(config.publicDir, recursive: true);
 
   Progress progress = logger.progress('Generating static files');
   await compileResources(ResourceType.page, config: config, logger: logger);
@@ -68,15 +68,15 @@ Future<void> compile(Config config, {Logger logger}) async {
   await createTagArchives(posts, config: config, logger: logger);
 
   // Copy assets directory to public directory.
-  Uri publicAssetsDir = config.publicDirUri.resolve(config.assetsDir);
+  Uri publicAssetsDir = config.publicDir.resolve(config.assetsPath);
   logger.stdout('Copying assets folder');
   logger.trace(publicAssetsDir.toFilePath());
-  fs.copyDirectory(config.assetsDirUri, publicAssetsDir);
+  fs.copyDirectory(config.assetsDir, publicAssetsDir);
 }
 
 /// Deploys site to [host].
 Future<void> deploy(DeployHost host,
     {@required Config config, Logger logger}) async {
   DeployHandler handler = createDeployHandler(host, config);
-  await handler.deploy(config.publicDirUri, logger: logger);
+  await handler.deploy(config.publicDir, logger: logger);
 }

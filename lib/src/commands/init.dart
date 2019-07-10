@@ -5,7 +5,10 @@ import 'package:path/path.dart' as p;
 import '../../tota.dart' as tota;
 
 class InitCommand extends Command {
+  @override
   final name = 'init';
+
+  @override
   final description = 'Create a new Tota project.';
 
   InitCommand() {
@@ -15,6 +18,7 @@ class InitCommand extends Command {
         abbr: 'v', negatable: false, help: 'Enable verbose logging.');
   }
 
+  @override
   void run() async {
     Logger logger =
         argResults['verbose'] ? Logger.verbose() : Logger.standard();

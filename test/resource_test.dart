@@ -14,7 +14,7 @@ void main() {
             await createResource(ResourceType.page, 'New File', config: config);
         expect(result.title, equals('New File'));
 
-        var file = File.fromUri(config.pagesDirUri.resolve('new-file.md'));
+        var file = File.fromUri(config.pagesDir.resolve('new-file.md'));
         expect(file.exists(), completion(isTrue));
       });
     });
@@ -47,19 +47,17 @@ void main() {
       withFixtures((config) async {
         await compileResources(ResourceType.page, config: config);
 
-        var file =
-            File.fromUri(config.publicDirUri.resolve('nested/page.html'));
+        var file = File.fromUri(config.publicDir.resolve('nested/page.html'));
         expect(file.existsSync(), isTrue);
       });
     });
 
     test('formats date according to config', () {
       withFixtures((config) async {
-        config = createTestConfig(config.rootDir, dateFormat: 'yMMMMd');
+        config = createTestConfig(config.rootPath, dateFormat: 'yMMMMd');
         await compileResources(ResourceType.post, config: config);
 
-        var file =
-            File.fromUri(config.publicDirUri.resolve('posts/foo-bar.html'));
+        var file = File.fromUri(config.publicDir.resolve('posts/foo-bar.html'));
         expect(file.readAsStringSync(), contains('July 20, 1969'));
       });
     });
@@ -68,7 +66,7 @@ void main() {
   group('createPostsArchive', () {
     test('throws an error if archive template is not found', () {
       withFixtures((config) async {
-        await File.fromUri(config.templatesDirUri.resolve('archive.mustache'))
+        await File.fromUri(config.templatesDir.resolve('archive.mustache'))
             .delete();
 
         var posts = <Resource>[
@@ -95,8 +93,7 @@ void main() {
         ];
         await createPostArchive(posts, config: config);
 
-        var file =
-            File.fromUri(config.publicDirUri.resolve('posts/index.html'));
+        var file = File.fromUri(config.publicDir.resolve('posts/index.html'));
         expect(file.existsSync(), isTrue);
         expect(file.readAsStringSync(), equals('<a>foo</a>\n'));
       });
@@ -113,7 +110,7 @@ void main() {
         ];
         await createTagArchives(posts, config: config);
 
-        var dir = await Directory.fromUri(config.publicDirUri.resolve('tags'))
+        var dir = await Directory.fromUri(config.publicDir.resolve('tags'))
             .list()
             .toList();
         expect(dir.length, equals(2));

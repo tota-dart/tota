@@ -3,11 +3,14 @@ import 'package:cli_util/cli_logging.dart';
 import 'package:dotenv/dotenv.dart' as dotenv;
 import 'package:tota/src/deploy/deploy_handler.dart';
 
-import '../../tota.dart' as tota;
+import '../../tota.dart';
 import '../config.dart';
 
 class DeployCommand extends Command {
+  @override
   final name = 'deploy';
+
+  @override
   final description = 'Deploy site to hosting provider';
 
   DeployCommand() {
@@ -20,35 +23,33 @@ class DeployCommand extends Command {
         abbr: 'v', negatable: false, help: 'Enable verbose logging.');
   }
 
+  @override
   void run() async {
     dotenv.load();
     Logger logger =
         argResults['verbose'] ? Logger.verbose() : Logger.standard();
 
     try {
-      Config config = tota.loadConfig();
+      Config config = Config.fromEnv();
 
-      await tota.deploy(_parseProvider(argResults['provider']),
+      await deploy(_parseProvider(argResults['provider']),
           config: config, logger: logger);
 
-      logger.stdout('Project ${logger.ansi.emphasized('deployed')}.');
+      logger.stdout('Site ${logger.ansi.emphasized('deployed')}.');
+    } on TotaException catch (e) {
+      logger.stderr(logger.ansi.error(e.message));
     } catch (e) {
-      switch (e.runtimeType) {
-        case tota.TotaException:
-          logger.stderr(logger.ansi.error(e.message));
-          break;
-        default:
-          rethrow;
-      }
+      rethrow;
     }
   }
 }
 
+/// Parses [provider] and returns a valid deploy host.
 DeployHost _parseProvider(String provider) {
   switch (provider) {
     case 'netlify':
       return DeployHost.netlify;
     default:
-      throw tota.TotaException('host not supported: `$provider`');
+      throw TotaException('host not supported: `$provider`');
   }
 }

@@ -2,12 +2,15 @@ import 'package:args/command_runner.dart';
 import 'package:cli_util/cli_logging.dart';
 import 'package:dotenv/dotenv.dart' as dotenv;
 
-import '../../tota.dart' as tota;
+import '../../tota.dart';
 import '../config.dart';
 import '../tota_exception.dart';
 
 class NewCommand extends Command {
+  @override
   final name = 'new';
+
+  @override
   final description = 'Create a new page.';
 
   NewCommand() {
@@ -25,16 +28,7 @@ class NewCommand extends Command {
         defaultsTo: false);
   }
 
-  /// Converts a page type [name] into a Tota resource type.
-  tota.ResourceType getResourceType(String name) {
-    switch (name) {
-      case 'post':
-        return tota.ResourceType.post;
-      default:
-        return tota.ResourceType.page;
-    }
-  }
-
+  @override
   void run() async {
     dotenv.load();
 
@@ -42,19 +36,29 @@ class NewCommand extends Command {
         argResults['verbose'] ? Logger.verbose() : Logger.standard();
 
     try {
-      Config config = tota.loadConfig();
+      Config config = Config.fromEnv();
 
       String title = argResults.rest.isEmpty ? '' : argResults.rest[0];
       if (title.isEmpty) {
         throw TotaException('Title is required');
       }
 
-      await tota.createPage(getResourceType(argResults['type']), title,
+      await createPage(_parseResourceType(argResults['type']), title,
           config: config, force: argResults['force'], logger: logger);
 
       logger.stdout('File ${logger.ansi.emphasized('created')}.');
     } catch (e) {
       logger.stderr(logger.ansi.error(e.message));
     }
+  }
+}
+
+/// Parses page [type] and returns a valid resource type.
+ResourceType _parseResourceType(String type) {
+  switch (type) {
+    case 'post':
+      return ResourceType.post;
+    default:
+      return ResourceType.page;
   }
 }

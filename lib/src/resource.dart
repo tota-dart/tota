@@ -48,15 +48,14 @@ class Resource {
 /// Scaffolds a new page file with desired [title].
 Future<Resource> createResource(ResourceType type, String title,
     {@required Config config, bool force}) async {
-  Uri sourceDir =
-      type == ResourceType.post ? config.postsDirUri : config.pagesDirUri;
+  Uri sourceDir = type == ResourceType.post ? config.postsDir : config.pagesDir;
   // Slugify title to create a file name.
   var filename = p.setExtension(Slugify(title), '.md');
   var uri = sourceDir.resolve(filename);
   var today = DateTime.now();
   var metadata = <String, dynamic>{
     'title': title,
-    'date': DateFormat(config.posts.dateFormat).format(today),
+    'date': DateFormat(config.dateFormat).format(today),
     'template': 'base',
     'public': false,
   };
@@ -72,8 +71,7 @@ Future<Resource> createResource(ResourceType type, String title,
 Future<List<Resource>> compileResources(ResourceType type,
     {@required Config config, Logger logger}) async {
   var compiled = <Resource>[];
-  Uri sourceDir =
-      type == ResourceType.post ? config.postsDirUri : config.pagesDirUri;
+  Uri sourceDir = type == ResourceType.post ? config.postsDir : config.pagesDir;
 
   /// Lists all Markdown files in the pages directory.
   await for (FileSystemEntity entity
@@ -93,26 +91,26 @@ Future<List<Resource>> compileResources(ResourceType type,
       String content = convertMarkdownToHtml(resource['content']);
       // Load HTML template.
       Template template =
-          await fs.loadTemplate(resource['template'], config.templatesDirUri);
+          await fs.loadTemplate(resource['template'], config.templatesDir);
       // Accumulate template local variables.
       DateTime date = resource.containsKey('date')
           ? DateTime.parse(resource['date'])
           : DateTime.now();
       Map<String, dynamic> locals = {
         'page': resource,
-        'site': config.site.toJson(),
+        'site': config.siteJson(),
         'content': content,
-        'title': resource['title'] ?? config.site.title,
-        'description': resource['description'] ?? config.site.description,
-        'date': DateFormat(config.posts.dateFormat).format(date),
-        'language': resource['language'] ?? config.site.language,
-        'author': resource['author'] ?? config.site.author,
+        'title': resource['title'] ?? config.title,
+        'description': resource['description'] ?? config.description,
+        'date': DateFormat(config.dateFormat).format(date),
+        'language': resource['language'] ?? config.language,
+        'author': resource['author'] ?? config.author,
       };
 
       // Create a sub-directory in public directory for posts.
       // This will be reflected in the URL path for the posts.
-      Uri destination = config.publicDirUri
-          .resolve(type == ResourceType.post ? config.postsDir : '');
+      Uri destination = config.publicDir
+          .resolve(type == ResourceType.post ? config.postsPath : '');
 
       // Use a relative file path from source directory path to ensure the
       // same nested directory structure is created in the public directory.
@@ -128,7 +126,7 @@ Future<List<Resource>> compileResources(ResourceType type,
       }
 
       var publicPath = p.relative(p.withoutExtension(file.path),
-          from: config.publicDirUri.toFilePath());
+          from: config.publicDir.toFilePath());
       compiled.add(Resource(
         type: type,
         date: date,
@@ -153,15 +151,15 @@ Future<File> _createArchiveFile(Uri uri, List<Resource> posts,
     {@required Config config, Logger logger, String tag}) async {
   // Create template locals.
   Map<String, dynamic> locals = {
-    'site': config.site.toJson(),
+    'site': config.siteJson(),
     'posts': posts,
-    'title': tag ?? config.site.title,
-    'description': config.site.description,
-    'author': config.site.author,
-    'language': config.site.language,
+    'title': tag ?? config.title,
+    'description': config.description,
+    'author': config.author,
+    'language': config.language,
   };
   // Load template.
-  Template template = await fs.loadTemplate('archive', config.templatesDirUri);
+  Template template = await fs.loadTemplate('archive', config.templatesDir);
   // Save file.
   File file = File.fromUri(uri);
   await file.create(recursive: true);
@@ -182,7 +180,7 @@ Future<void> createPostArchive(List<Resource> posts,
   posts.sort((a, b) => b.date.compareTo(a.date));
 
   // Create the archive page in the posts public directory.
-  Uri publicPostsDir = config.publicDirUri.resolve(config.postsDir);
+  Uri publicPostsDir = config.publicDir.resolve(config.postsPath);
   await _createArchiveFile(publicPostsDir.resolve('index.html'), posts,
       config: config, logger: logger);
 }
@@ -202,7 +200,7 @@ Future<void> createTagArchives(List<Resource> resources,
         resources.where((resource) => resource.tags.contains(tag)).toList();
     // Sort posts by date (newest first).
     posts.sort((a, b) => a.date.compareTo(b.date));
-    var tagUri = config.publicDirUri.resolve('tags/$tag.html');
+    var tagUri = config.publicDir.resolve('tags/$tag.html');
     await _createArchiveFile(tagUri, posts,
         config: config, logger: logger, tag: tag);
   }

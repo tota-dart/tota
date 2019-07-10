@@ -18,9 +18,9 @@ DeployHandler createDeployHandler(DeployHost host, Config config) {
   switch (host) {
     case DeployHost.netlify:
       {
-        var siteName = config.deploy.netlifySite.replaceAll('.netlify.com', '');
+        var siteName = config.netlifySite.replaceAll('.netlify.com', '');
         return NetlifyDeployHandler(
-            siteName: siteName, accessToken: config.deploy.netlifyToken);
+            siteName: siteName, accessToken: config.netlifyToken);
       }
     default:
       throw TotaException('deployment method not supported');

@@ -47,7 +47,7 @@ void main() {
     test('lists all files in a directory', () {
       withFixtures((config) async {
         var result =
-            await listDirectory(config.pagesDirUri, recursive: true).toList();
+            await listDirectory(config.pagesDir, recursive: true).toList();
         expect(result.length, greaterThan(3));
       });
     });
@@ -157,9 +157,9 @@ void main() {
     test('copies assets directory to public directory', () {
       withFixtures((config) async {
         await copyDirectory(
-            config.assetsDirUri, config.publicDirUri.resolve('assets/'));
+            config.assetsDir, config.publicDir.resolve('assets/'));
 
-        var file = File.fromUri(config.publicDirUri.resolve('assets/index.js'));
+        var file = File.fromUri(config.publicDir.resolve('assets/index.js'));
         expect(file.existsSync(), isTrue);
         expect(file.readAsStringSync(), contains('console.log("foo")'));
       });
@@ -169,9 +169,9 @@ void main() {
   group('removeDirectory', () {
     test('deletes a directory', () {
       withFixtures((config) async {
-        await removeDirectory(config.pagesDirUri, recursive: true);
+        await removeDirectory(config.pagesDir, recursive: true);
 
-        var file = File.fromUri(config.pagesDirUri);
+        var file = File.fromUri(config.pagesDir);
         expect(file.existsSync(), isFalse);
       });
     });

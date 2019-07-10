@@ -53,20 +53,18 @@ Future<T> withFixtures<T>(Future<T> fn(Config config)) async {
 }
 
 /// Creates a test config with [path] as root directory.
-Config createTestConfig(String path, {String dateFormat}) {
-  return createConfig(
-    url: 'https://test',
-    title: 'test',
-    description: 'test',
-    author: 'test',
-    language: 'en',
-    rootDir: path,
-    publicDir: 'public/',
-    pagesDir: 'pages/',
-    postsDir: 'posts/',
-    templatesDir: 'templates/',
-    assetsDir: 'assets/',
-    dateFormat: dateFormat ?? 'DD-MM-YYYY',
-    permalink: '',
-  );
-}
+Config createTestConfig(String path, {String dateFormat}) => Config(
+      url: 'https://test',
+      title: 'test',
+      description: 'test',
+      author: 'test',
+      language: 'en',
+      rootPath: path,
+      publicPath: 'public/',
+      pagesPath: 'pages/',
+      postsPath: 'posts/',
+      templatesPath: 'templates/',
+      assetsPath: 'assets/',
+      dateFormat: dateFormat ?? 'DD-MM-YYYY',
+      permalink: '',
+    );
