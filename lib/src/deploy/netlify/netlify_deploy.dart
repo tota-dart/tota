@@ -1,13 +1,13 @@
 import 'dart:convert';
 
 import 'package:cli_util/cli_logging.dart';
-import 'package:http/http.dart';
+import 'package:http/http.dart' as http;
 import 'package:meta/meta.dart';
 import 'package:pool/pool.dart';
 
-import '../../tota_exception.dart';
 import 'netlify_config.dart';
 import 'netlify_deploy_handler.dart';
+import 'netlify_exception.dart';
 import 'netlify_file.dart';
 
 const String _deployTitle = 'Deploy via Tota CLI';
@@ -28,7 +28,7 @@ class NetlifyDeploy {
   final List<NetlifyFile> functions;
 
   /// Deploy ID returned when creating a new deploy.
-  String deployId;
+  String id;
 
   /// List of digests of files/functions Netlify doesn't have on its servers.
   List<String> requiredFiles, requiredFunctions;
@@ -36,7 +36,7 @@ class NetlifyDeploy {
   NetlifyDeploy({@required this.config, this.files, this.functions});
 
   /// Has created a successful deployment resource.
-  bool get hasId => deployId != null;
+  bool get hasId => id != null;
 
   /// Truthy if Netlify expects functions to be uploaded.
   bool get hasFunctions => requiredFunctions != null;
@@ -61,35 +61,35 @@ class NetlifyDeploy {
   /// Creates a new deploy with the Netlify API.
   Future<void> create({Logger logger}) async {
     logger ??= Logger.standard();
-    var response = await post(
+    var response = await http.post(
         config.baseUri.resolve(
             'sites/${config.siteId}/deploys?access_token=${config.accessToken}'),
         body: json.encode(toJson()),
         headers: defaultHeaders);
     var body = json.decode(response.body);
     if (response.statusCode != 200) {
-      throw TotaException('[netlify] failed to create deploy');
+      throw NetlifyApiException('failed to create deploy', body['message']);
     }
-    this.deployId = body['id'];
+    this.id = body['id'];
     this.requiredFiles = List<String>.from(body['required']);
     if (body['required_functions'] != null) {
       this.requiredFunctions = List<String>.from(body['required_functions']);
     }
-    logger.trace('Deploy created with ID: $deployId');
+    logger.trace('Deploy created with ID: $id');
   }
 
   /// Uploads a single [file] to Netlify.
   ///
   /// Adds file upload to the upload pool to throttle requests to API.
   Future<NetlifyFile> _uploadSingle(NetlifyFile file, {Logger logger}) async {
-    return _pool.withResource(() => file.upload(deployId, logger: logger));
+    return _pool.withResource(() => file.upload(id, logger: logger));
   }
 
   /// Uploads all [files] to Netlify.
   Future<List<NetlifyFile>> uploadAll(List<NetlifyFile> files,
       {Logger logger}) async {
     if (!hasId) {
-      throw TotaException('[netlify] deploy ID not set');
+      throw NetlifyException('deploy ID not set');
     }
     return await Future.wait(
         files.map((file) => _uploadSingle(file, logger: logger)));

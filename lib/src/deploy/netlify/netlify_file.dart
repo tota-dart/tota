@@ -3,11 +3,11 @@ import 'dart:io';
 
 import 'package:cli_util/cli_logging.dart';
 import 'package:crypto/crypto.dart';
-import 'package:http/http.dart';
+import 'package:http/http.dart' as http;
 import 'package:meta/meta.dart';
 
-import '../../tota_exception.dart';
 import 'netlify_config.dart';
+import 'netlify_exception.dart';
 
 /// A file to be uploaded to Netlify.
 ///
@@ -44,7 +44,7 @@ class NetlifyFile {
       HttpHeaders.contentTypeHeader: 'application/octet-stream'
     };
     logger ??= Logger.standard();
-    var response = await put(
+    var response = await http.put(
         config.baseUri.resolve(
             'deploys/$deployId/files/$path?access_token=${config.accessToken}'),
         headers: headers,
@@ -52,7 +52,8 @@ class NetlifyFile {
 
     var body = json.decode(response.body);
     if (response.statusCode != 200) {
-      throw TotaException("Failed to upload file `$path`: ${body['message']}");
+      throw NetlifyApiException(
+          'failed to upload file `$path`', body['message']);
     }
     logger.trace(directory.resolve(path).toFilePath());
     return this;
