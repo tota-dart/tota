@@ -14,11 +14,8 @@ class DeployCommand extends Command {
   final description = 'Deploy site to hosting provider';
 
   DeployCommand() {
-    argParser.addOption('provider',
-        abbr: 'p',
-        allowed: ['netlify'],
-        help: 'Hosting provider',
-        defaultsTo: 'netlify');
+    argParser.addOption('host',
+        allowed: ['netlify'], help: 'Hosting provider', defaultsTo: 'netlify');
     argParser.addFlag('verbose',
         abbr: 'v', negatable: false, help: 'Enable verbose logging.');
   }
@@ -32,7 +29,7 @@ class DeployCommand extends Command {
     try {
       Config config = Config.fromEnv();
 
-      await deploy(_parseProvider(argResults['provider']),
+      await deploy(_parseHost(argResults['host']),
           config: config, logger: logger);
 
       logger.stdout('Site ${logger.ansi.emphasized('deployed')}.');
@@ -45,11 +42,11 @@ class DeployCommand extends Command {
 }
 
 /// Parses [provider] and returns a valid deploy host.
-DeployHost _parseProvider(String provider) {
-  switch (provider) {
+DeployHost _parseHost(String host) {
+  switch (host) {
     case 'netlify':
       return DeployHost.netlify;
     default:
-      throw TotaException('host not supported: `$provider`');
+      throw ArgumentError('host not supported ($host)');
   }
 }
