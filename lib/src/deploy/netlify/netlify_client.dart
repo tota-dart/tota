@@ -51,7 +51,7 @@ class NetlifyClient extends http.BaseClient {
   Future<http.Response> createFile(String deployId, filePath, List<int> body) =>
       _client.put(
           _baseUri.resolve(
-              'deploys/$deployId/files/$filePath?access_token=${_accessToken}'),
+              'deploys/$deployId/files/${Uri.encodeComponent(filePath)}?access_token=${_accessToken}'),
           headers: _createHeaders(contentType: 'application/octet-stream'),
           body: body);
 
