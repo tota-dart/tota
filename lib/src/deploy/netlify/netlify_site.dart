@@ -1,29 +1,25 @@
 import 'dart:convert';
 
 import 'package:cli_util/cli_logging.dart';
-import 'package:http/http.dart';
-import 'package:tota/src/tota_exception.dart';
+import 'package:tota/src/deploy/netlify/netlify_exception.dart';
 
-import 'netlify_config.dart';
-import 'netlify_deploy_handler.dart';
+import 'netlify_client.dart';
 
 /// A site resource in Netlify.
 class NetlifySite {
-  final NetlifyConfig config;
+  final NetlifyClient client;
 
   // Account ID obtained after retrieval or creation.
   String id;
 
-  NetlifySite(this.config);
+  NetlifySite(this.client);
 
   /// Creates a new site on Netlify.
-  Future<NetlifySite> _create() async {
-    var response = await post(
-        config.baseUri.resolve('sites/?access_token=${config.accessToken}'),
-        headers: defaultHeaders,
-        body: json.encode({'name': config.siteName}));
+  Future<NetlifySite> create() async {
+    var response = await client.createSite();
     if (response.statusCode != 201) {
-      throw TotaException('[netlify] could not create site `${config.siteId}`');
+      throw NetlifyApiException(
+          'failed to create site (${client.siteId})', null);
     }
     var body = json.decode(response.body);
     this.id = body['id'];
@@ -31,13 +27,13 @@ class NetlifySite {
   }
 
   /// Retrieves a site from Netlify API.
-  Future<NetlifySite> _get() async {
-    var response = await get(config.baseUri
-        .resolve('sites/${config.siteId}/?access_token=${config.accessToken}'));
-    if (response.statusCode != 200) {
-      throw TotaException('[netlify] site not found: `${config.siteId}`');
-    }
+  Future<NetlifySite> retrieve() async {
+    var response = await client.retrieveSite();
     var body = json.decode(response.body);
+    if (response.statusCode != 200) {
+      throw NetlifyApiException(
+          'site not found (${client.siteId})', body['message']);
+    }
     this.id = body['id'];
     return this;
   }
@@ -46,13 +42,14 @@ class NetlifySite {
   Future<NetlifySite> findOrCreate({Logger logger}) async {
     logger ??= Logger.standard();
     try {
-      NetlifySite site = await _get();
-      logger.trace('Site found: ${config.siteId}');
+      NetlifySite site = await retrieve();
+      logger.trace('Site found: ${client.siteId}');
       return site;
     } catch (e) {
       if (e.message.toString().contains('site not found')) {
-        logger.trace('Site not found, creating new site: ${config.siteId}');
-        return await _create();
+        logger.trace('Site not found');
+        logger.trace('Creating new site: ${client.siteId}');
+        return await create();
       } else {
         rethrow;
       }

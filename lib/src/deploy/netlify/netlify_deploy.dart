@@ -1,12 +1,10 @@
 import 'dart:convert';
 
 import 'package:cli_util/cli_logging.dart';
-import 'package:http/http.dart' as http;
 import 'package:meta/meta.dart';
 import 'package:pool/pool.dart';
 
-import 'netlify_config.dart';
-import 'netlify_deploy_handler.dart';
+import 'netlify_client.dart';
 import 'netlify_exception.dart';
 import 'netlify_file.dart';
 
@@ -19,7 +17,7 @@ final Pool _pool = Pool(15);
 
 /// A Netlify deploy resource.
 class NetlifyDeploy {
-  final NetlifyConfig config;
+  final NetlifyClient client;
 
   /// Static files to be uploaded.
   final List<NetlifyFile> files;
@@ -33,7 +31,7 @@ class NetlifyDeploy {
   /// List of digests of files/functions Netlify doesn't have on its servers.
   List<String> requiredFiles, requiredFunctions;
 
-  NetlifyDeploy({@required this.config, this.files, this.functions});
+  NetlifyDeploy({@required this.client, this.files, this.functions});
 
   /// Has created a successful deployment resource.
   bool get hasId => id != null;
@@ -61,11 +59,7 @@ class NetlifyDeploy {
   /// Creates a new deploy with the Netlify API.
   Future<void> create({Logger logger}) async {
     logger ??= Logger.standard();
-    var response = await http.post(
-        config.baseUri.resolve(
-            'sites/${config.siteId}/deploys?access_token=${config.accessToken}'),
-        body: json.encode(toJson()),
-        headers: defaultHeaders);
+    var response = await client.createDeploy(toJson());
     var body = json.decode(response.body);
     if (response.statusCode != 200) {
       throw NetlifyApiException('failed to create deploy', body['message']);

@@ -2,6 +2,7 @@ import 'package:cli_util/cli_logging.dart';
 
 import '../config.dart';
 import '../tota_exception.dart';
+import 'netlify/netlify_client.dart';
 import 'netlify/netlify_deploy_handler.dart';
 
 /// Indicates the deployment hosting provider.
@@ -18,9 +19,10 @@ DeployHandler createDeployHandler(DeployHost host, Config config) {
   switch (host) {
     case DeployHost.netlify:
       {
-        var siteName = config.netlifySite.replaceAll('.netlify.com', '');
-        return NetlifyDeployHandler(
-            siteName: siteName, accessToken: config.netlifyToken);
+        NetlifyClient client = NetlifyClient(
+            config.netlifySite.replaceAll('.netlify.com', ''),
+            config.netlifyToken);
+        return NetlifyDeployHandler(client);
       }
     default:
       throw TotaException('deployment method not supported');

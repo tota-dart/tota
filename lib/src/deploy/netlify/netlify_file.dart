@@ -3,17 +3,16 @@ import 'dart:io';
 
 import 'package:cli_util/cli_logging.dart';
 import 'package:crypto/crypto.dart';
-import 'package:http/http.dart' as http;
 import 'package:meta/meta.dart';
 
-import 'netlify_config.dart';
+import 'netlify_client.dart';
 import 'netlify_exception.dart';
 
 /// A file to be uploaded to Netlify.
 ///
 /// Contains a digest of file path and SHA1 of file contents.
 class NetlifyFile {
-  final NetlifyConfig config;
+  final NetlifyClient client;
 
   /// URI of containing [directory].
   final Uri directory;
@@ -25,7 +24,7 @@ class NetlifyFile {
   Digest digest;
 
   NetlifyFile(
-      {@required this.config, @required this.directory, @required this.path});
+      {@required this.client, @required this.directory, @required this.path});
 
   /// Reads the file as bytes.
   Future<List<int>> _readAsBytes() async {
@@ -40,15 +39,9 @@ class NetlifyFile {
 
   /// Uploads the file to Netlify.
   Future<NetlifyFile> upload(String deployId, {Logger logger}) async {
-    Map<String, String> headers = {
-      HttpHeaders.contentTypeHeader: 'application/octet-stream'
-    };
     logger ??= Logger.standard();
-    var response = await http.put(
-        config.baseUri.resolve(
-            'deploys/$deployId/files/$path?access_token=${config.accessToken}'),
-        headers: headers,
-        body: await _readAsBytes());
+    var response =
+        await client.createFile(deployId, path, await _readAsBytes());
 
     var body = json.decode(response.body);
     if (response.statusCode != 200) {
