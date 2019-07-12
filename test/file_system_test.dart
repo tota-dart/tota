@@ -2,8 +2,8 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
+import 'package:tota/src/exceptions.dart';
 import 'package:tota/src/file_system.dart';
-import 'package:tota/tota.dart';
 
 import 'utils.dart';
 
@@ -25,9 +25,10 @@ void main() {
       withTempDir((path) async {
         var file = File(p.join(path, 'foo.md'));
         await file.writeAsString('foo');
-
-        expect(createSourceFile(Uri.file(file.path)),
-            throwsA(TypeMatcher<TotaException>()));
+        expect(
+          createSourceFile(Uri.file(file.path)),
+          throwsA(TypeMatcher<TotaIOException>()),
+        );
       });
     });
 
@@ -56,7 +57,7 @@ void main() {
       withTempDir((path) async {
         expect(
             () async => await listDirectory(Uri.directory('/path/not/found')),
-            throwsA(TypeMatcher<TotaException>()));
+            throwsA(TypeMatcher<TotaIOException>()));
       });
     });
   });

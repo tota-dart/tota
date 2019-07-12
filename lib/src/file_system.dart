@@ -4,7 +4,7 @@ import 'package:front_matter/front_matter.dart' as fm;
 import 'package:mustache/mustache.dart';
 import 'package:path/path.dart' as p;
 
-import 'tota_exception.dart';
+import 'exceptions.dart';
 import 'utils.dart';
 
 const _defaultHtmlTemplate = 'base.mustache';
@@ -22,7 +22,7 @@ Future<Uri> createSourceFile(Uri uri,
       // Overwrite file.
       await file.delete();
     } else {
-      throw fileAlreadyExistsException(file.path);
+      throw TotaIOException(file.path, 'File already exists');
     }
   }
   // Prefix content with front matter.
@@ -37,7 +37,7 @@ Future<Uri> createSourceFile(Uri uri,
 Stream listDirectory(Uri directory, {bool recursive = false}) {
   var dir = Directory.fromUri(directory);
   if (!dir.existsSync()) {
-    throw TotaException('Directory not found: ${directory.toFilePath()}');
+    throw TotaIOException(directory.toFilePath(), 'Directory not found');
   }
   return dir.list(recursive: recursive);
 }
@@ -50,7 +50,7 @@ Future<Map<String, dynamic>> parseSourceFile(Uri fileUri) async {
     fileMap['content'] = parsed.content;
     return fileMap;
   } catch (e) {
-    throw TotaException('unable to parse file: ${fileUri.toFilePath()}');
+    throw TotaIOException(fileUri.toFilePath(), 'Unable to parse file');
   }
 }
 
@@ -68,7 +68,7 @@ Future<Template> loadTemplate(String filename, Uri templatesDir) async {
   // Read template file contents and return template instance.
   var file = File.fromUri(templatesDir.resolve(filename));
   if (!await file.exists()) {
-    throw TotaException('HTML template not found: `$filename`');
+    throw TotaIOException(file.path, 'Template not found');
   }
   var fileContents = await file.readAsString();
   return Template(fileContents,
@@ -93,7 +93,7 @@ Function(String name) partialResolver(Uri partialsDir) {
   return (String name) {
     var directory = Directory.fromUri(partialsDir);
     if (!directory.existsSync()) {
-      throw TotaException("template partials directory not found");
+      throw TotaIOException(directory.path, 'Partials directory not found');
     }
     var partial = '';
     for (var file in directory.listSync(recursive: true)) {

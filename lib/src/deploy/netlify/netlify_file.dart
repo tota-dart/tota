@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:cli_util/cli_logging.dart';
@@ -43,10 +42,8 @@ class NetlifyFile {
     var response =
         await client.createFile(deployId, path, await _readAsBytes());
 
-    var body = json.decode(response.body);
     if (response.statusCode != 200) {
-      throw NetlifyApiException(
-          'failed to upload file `$path`', body['message']);
+      throw NetlifyException('Failed to upload file ($path)');
     }
     logger.trace(directory.resolve(path).toFilePath());
     return this;

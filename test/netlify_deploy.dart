@@ -51,7 +51,7 @@ void main() {
       var site = NetlifySite(NetlifyClient('foo', 't0k3n', mockHttpClient));
 
       expect(() async => await site.create(),
-          throwsA(TypeMatcher<NetlifyApiException>()));
+          throwsA(TypeMatcher<NetlifyException>()));
       mockHttpClient.close();
     });
   });
@@ -79,8 +79,9 @@ void main() {
 
     test('uploads file', () {
       withFixtures((config) async {
+        var filePathEncoded = Uri.encodeComponent('public/index.html');
         var url =
-            'https://api.netlify.com/api/v1/deploys/123/files/public/index.html?access_token=t0k3n';
+            'https://api.netlify.com/api/v1/deploys/123/files/$filePathEncoded?access_token=t0k3n';
         var mockHttpClient = MockClient((req) {
           expect(req.method, equals('PUT'));
           expect(req.url.toString(), equals(url));

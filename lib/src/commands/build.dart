@@ -1,6 +1,7 @@
 import 'package:args/command_runner.dart';
 import 'package:cli_util/cli_logging.dart';
 import 'package:dotenv/dotenv.dart' as dotenv;
+import 'package:tota/src/exceptions.dart';
 
 import '../../tota.dart';
 import '../config.dart';
@@ -29,6 +30,8 @@ class BuildCommand extends Command {
       await compile(config, logger: logger);
 
       logger.stdout('All ${logger.ansi.emphasized('done')}.');
+    } on TotaIOException catch (e) {
+      logger.stderr(logger.ansi.error('${e.message}: ${e.path}'));
     } on TotaException catch (e) {
       logger.stderr(logger.ansi.error(e.message));
     } catch (e) {

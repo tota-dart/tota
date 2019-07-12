@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:cli_util/cli_logging.dart';
 import 'package:path/path.dart' as p;
 
-import '../deploy_handler.dart';
+import '../deploy.dart';
 import 'netlify_client.dart';
 import 'netlify_deploy.dart';
 import 'netlify_file.dart';

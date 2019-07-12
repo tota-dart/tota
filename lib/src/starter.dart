@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'tota_exception.dart';
+import 'exceptions.dart';
 
 /// URL of the source git repository.
 final Uri repoUrl = Uri.https('github.com', 'tota-dart/tota-starter.git');

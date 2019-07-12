@@ -1,7 +1,7 @@
 import 'package:args/command_runner.dart';
 import 'package:cli_util/cli_logging.dart';
 import 'package:dotenv/dotenv.dart' as dotenv;
-import 'package:tota/src/deploy/deploy_handler.dart';
+import 'package:tota/src/deploy/deploy.dart';
 
 import '../../tota.dart';
 import '../config.dart';
@@ -35,6 +35,7 @@ class DeployCommand extends Command {
       logger.stdout('Site ${logger.ansi.emphasized('deployed')}.');
     } on TotaException catch (e) {
       logger.stderr(logger.ansi.error(e.message));
+      throw "Failed";
     } catch (e) {
       rethrow;
     }

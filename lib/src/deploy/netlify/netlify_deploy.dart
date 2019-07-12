@@ -62,7 +62,7 @@ class NetlifyDeploy {
     var response = await client.createDeploy(toJson());
     var body = json.decode(response.body);
     if (response.statusCode != 200) {
-      throw NetlifyApiException('failed to create deploy', body['message']);
+      throw NetlifyException('Failed to create deploy');
     }
     this.id = body['id'];
     this.requiredFiles = List<String>.from(body['required']);
@@ -83,7 +83,7 @@ class NetlifyDeploy {
   Future<List<NetlifyFile>> uploadAll(List<NetlifyFile> files,
       {Logger logger}) async {
     if (!hasId) {
-      throw NetlifyException('deploy ID not set');
+      throw NetlifyException('Deploy ID not set');
     }
     return await Future.wait(
         files.map((file) => _uploadSingle(file, logger: logger)));

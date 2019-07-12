@@ -4,7 +4,7 @@ import 'package:dotenv/dotenv.dart' as dotenv;
 
 import '../../tota.dart';
 import '../config.dart';
-import '../tota_exception.dart';
+import '../exceptions.dart';
 
 class NewCommand extends Command {
   @override
@@ -47,6 +47,8 @@ class NewCommand extends Command {
           config: config, force: argResults['force'], logger: logger);
 
       logger.stdout('File ${logger.ansi.emphasized('created')}.');
+    } on TotaIOException catch (e) {
+      logger.stderr(logger.ansi.error('${e.message}: ${e.path}'));
     } catch (e) {
       logger.stderr(logger.ansi.error(e.message));
     }

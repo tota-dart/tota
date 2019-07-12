@@ -14,25 +14,28 @@ class NetlifySite {
 
   NetlifySite(this.client);
 
-  /// Creates a new site on Netlify.
-  Future<NetlifySite> create() async {
-    var response = await client.createSite();
-    if (response.statusCode != 201) {
-      throw NetlifyApiException(
-          'failed to create site (${client.siteId})', null);
-    }
-    var body = json.decode(response.body);
-    this.id = body['id'];
-    return this;
-  }
-
   /// Retrieves a site from Netlify API.
   Future<NetlifySite> retrieve() async {
     var response = await client.retrieveSite();
     var body = json.decode(response.body);
-    if (response.statusCode != 200) {
-      throw NetlifyApiException(
-          'site not found (${client.siteId})', body['message']);
+    switch (response.statusCode) {
+      case 200:
+        break;
+      case 401:
+        throw NetlifyException('Site already exists', 401);
+      default:
+        throw NetlifyException('Site not found');
+    }
+    this.id = body['id'];
+    return this;
+  }
+
+  /// Creates a new site on Netlify.
+  Future<NetlifySite> create() async {
+    var response = await client.createSite();
+    var body = json.decode(response.body);
+    if (response.statusCode != 201) {
+      throw NetlifyException('Failed to create site');
     }
     this.id = body['id'];
     return this;
@@ -45,14 +48,16 @@ class NetlifySite {
       NetlifySite site = await retrieve();
       logger.trace('Site found: ${client.siteId}');
       return site;
-    } catch (e) {
-      if (e.message.toString().contains('site not found')) {
-        logger.trace('Site not found');
-        logger.trace('Creating new site: ${client.siteId}');
-        return await create();
-      } else {
+    } on NetlifyException catch (e) {
+      if (e.statusCode == 401) {
+        // Can't proceed; site already exists.
         rethrow;
       }
+      logger.trace('Site not found');
+      logger.trace('Creating new site: ${client.siteId}');
+      return await create();
+    } catch (e) {
+      rethrow;
     }
   }
 }

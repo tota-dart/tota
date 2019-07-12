@@ -4,13 +4,13 @@ import 'dart:io';
 
 import 'package:cli_util/cli_logging.dart';
 import 'package:meta/meta.dart';
-import 'package:tota/src/deploy/deploy_handler.dart';
+import 'package:tota/src/deploy/deploy.dart';
 
 import 'config.dart';
+import 'exceptions.dart';
 import 'file_system.dart' as fs;
 import 'resource.dart';
 import 'starter.dart';
-import 'tota_exception.dart';
 
 /// Initializes a new project in [directory].
 Future<void> createProject(Uri directory) async {
@@ -20,8 +20,7 @@ Future<void> createProject(Uri directory) async {
   if (await dir.exists()) {
     var dirents = await dir.list().toList();
     if (dirents.isNotEmpty) {
-      throw TotaException(
-          'target directory is not empty: `${directory.toFilePath()}`');
+      throw TotaIOException(directory.toFilePath(), 'Directory not empty');
     }
   }
 

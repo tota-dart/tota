@@ -1,7 +1,7 @@
 import 'package:cli_util/cli_logging.dart';
 
 import '../config.dart';
-import '../tota_exception.dart';
+import '../exceptions.dart';
 import 'netlify/netlify_client.dart';
 import 'netlify/netlify_deploy_handler.dart';
 

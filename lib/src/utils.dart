@@ -1,7 +1,7 @@
 import 'package:dotenv/dotenv.dart' as dotenv;
 import 'package:markdown/markdown.dart';
 
-import 'tota_exception.dart';
+import 'exceptions.dart';
 
 /// Converts a [Map] to a front matter string.
 ///
