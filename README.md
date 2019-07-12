@@ -36,4 +36,11 @@ vim pages/hello-world.md
 tota build
 ```
 
+#### Deploy site
+
+```bash
+tota deploy
+```
+
+
 See `--help` for usage information.
