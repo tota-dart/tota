@@ -67,10 +67,12 @@ Future<void> compile(Config config, {Logger logger}) async {
   await createTagArchives(posts, config: config, logger: logger);
 
   // Copy assets directory to public directory.
-  Uri publicAssetsDir = config.publicDir.resolve(config.assetsPath);
-  logger.stdout('Copying assets folder');
-  logger.trace(publicAssetsDir.toFilePath());
-  fs.copyDirectory(config.assetsDir, publicAssetsDir);
+  if (await Directory.fromUri(config.assetsDir).exists()) {
+    Uri publicAssetsDir = config.publicDir.resolve(config.assetsPath);
+    logger.stdout('Copying assets folder');
+    logger.trace(publicAssetsDir.toFilePath());
+    fs.copyDirectory(config.assetsDir, publicAssetsDir);
+  }
 }
 
 /// Deploys site to [host].
