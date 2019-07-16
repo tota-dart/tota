@@ -54,7 +54,7 @@ Future<Map<String, dynamic>> parseSourceFile(Uri fileUri) async {
   }
 }
 
-/// Loads the HTML template.
+/// Loads the HTML template from file.
 ///
 /// If template [filename] is null, defaults to the base template filename.
 /// Throws an exception if template file cannot be found in [templatesDir].

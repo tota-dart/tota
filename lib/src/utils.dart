@@ -32,10 +32,17 @@ String getenv(String key,
 }
 
 /// Converts Markdown [text] to HTML.
+///
+/// Extension set is similar to GitHub flavored Markdown set.
 String convertMarkdownToHtml(String text) =>
     markdownToHtml(text, inlineSyntaxes: [
       InlineHtmlSyntax(),
+      StrikethroughSyntax(),
+      EmojiSyntax(),
+      AutolinkExtensionSyntax(),
     ], blockSyntaxes: [
+      FencedCodeBlockSyntax(),
+      SetextHeaderWithIdSyntax(),
       HeaderWithIdSyntax(),
       TableSyntax(),
     ]);
