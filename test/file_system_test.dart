@@ -131,7 +131,8 @@ void main() {
         await File.fromUri(partialsPath.resolve('foo.mustache'))
             .writeAsString('<h1>{{ foo }}</h1>');
 
-        var resolver = partialResolver(templatesDir.resolve('_partials/'));
+        var resolver =
+            createPartialResolver(templatesDir.resolve('_partials/'));
         var partial = resolver('foo');
         expect(partial.renderString({'foo': 'bar'}), equals('<h1>bar</h1>'));
       });
@@ -147,7 +148,8 @@ void main() {
         await File.fromUri(partialsPath.resolve('foo.mustache'))
             .writeAsString('<h1>{{ foo }}</h1>');
 
-        var resolver = partialResolver(templatesDir.resolve('_partials/'));
+        var resolver =
+            createPartialResolver(templatesDir.resolve('_partials/'));
         var partial = resolver('foo');
         expect(partial.renderString({'foo': 'bar'}), equals('<h1>bar</h1>'));
       });

@@ -4,14 +4,18 @@ import 'package:cli_util/cli_logging.dart';
 import 'package:intl/intl.dart' show DateFormat;
 import 'package:meta/meta.dart';
 import 'package:mustache/mustache.dart' show Template;
+import 'package:mustache/mustache.dart';
 import 'package:path/path.dart' as p;
 import 'package:slugify/slugify.dart';
+import 'package:tota/src/exceptions.dart';
 
 import 'config.dart';
 import 'file_system.dart' as fs;
 import 'utils.dart';
 
 const _markdownFileExtension = '.md';
+const _mustacheFileExtension = '.mustache';
+const _defaultHtmlTemplate = 'base$_mustacheFileExtension';
 
 /// Represents the type of resource.
 enum ResourceType { page, post }
@@ -90,8 +94,9 @@ Future<List<Resource>> compileResources(ResourceType type,
       // Convert body content from Markdown to HTML.
       String content = convertMarkdownToHtml(resource['content']);
       // Load HTML template.
-      Template template =
-          await fs.loadTemplate(resource['template'], config.templatesDir);
+      Template template = await _resolveTemplate(
+          resource['template'], config.templatesDir,
+          fallback: _resolveTemplateForType(type, config));
       // Accumulate template local variables.
       DateTime date = resource.containsKey('date')
           ? DateTime.parse(resource['date'])
@@ -168,6 +173,42 @@ Future<File> _createArchiveFile(Uri uri, List<Resource> posts,
     logger.trace(file.path);
   }
   return file;
+}
+
+/// Resolves the default template for resource [type].
+///
+/// Default file is inferred to be a mustache file in the templates
+/// directory with the same filename as the source posts directory.
+String _resolveTemplateForType(ResourceType type, Config config) {
+  switch (type) {
+    case ResourceType.post:
+      return p.setExtension(
+          p.basenameWithoutExtension(config.postsPath), _mustacheFileExtension);
+    default:
+      return p.setExtension(
+          p.basenameWithoutExtension(config.postsPath), _mustacheFileExtension);
+  }
+}
+
+///  Retrieves the template from [path] in [directory].
+///
+/// If [template] is not found, tries to load the [fallback] template,
+/// before eventually loading the base template as last resort.
+Future<Template> _resolveTemplate(String path, Uri directory,
+    {String fallback}) async {
+  for (var file in <String>[path, fallback]) {
+    try {
+      if (file != null) {
+        return await fs.loadTemplate(file, directory);
+      }
+    } on TotaIOException {
+      // Load the next file in list if file not found.
+      continue;
+    } catch (e) {
+      rethrow;
+    }
+  }
+  return fs.loadTemplate(_defaultHtmlTemplate, directory);
 }
 
 /// Creates a posts archive page.

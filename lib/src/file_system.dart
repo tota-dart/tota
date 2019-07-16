@@ -7,8 +7,6 @@ import 'package:path/path.dart' as p;
 import 'exceptions.dart';
 import 'utils.dart';
 
-const _defaultHtmlTemplate = 'base.mustache';
-
 /// Scaffolds a source file from a starting template.
 ///
 /// Creates a new [file] in the source directory with optional [metadata]
@@ -54,25 +52,20 @@ Future<Map<String, dynamic>> parseSourceFile(Uri fileUri) async {
   }
 }
 
-/// Loads the HTML template from file.
-///
-/// If template [filename] is null, defaults to the base template filename.
-/// Throws an exception if template file cannot be found in [templatesDir].
-Future<Template> loadTemplate(String filename, Uri templatesDir) async {
-  // Fallback to default template.
-  filename ??= _defaultHtmlTemplate;
-  // Add template file extension if absent.
-  if (p.extension(filename).isEmpty) {
-    filename = p.setExtension(filename, '.mustache');
+/// Loads the HTML template from [path] in a [directory].
+Future<Template> loadTemplate(String path, Uri directory) async {
+  // Append template file extension if absent.
+  if (p.extension(path).isEmpty) {
+    path = p.setExtension(path, '.mustache');
   }
   // Read template file contents and return template instance.
-  var file = File.fromUri(templatesDir.resolve(filename));
+  var file = File.fromUri(directory.resolve(path));
   if (!await file.exists()) {
     throw TotaIOException(file.path, 'Template not found');
   }
-  var fileContents = await file.readAsString();
-  return Template(fileContents,
-      partialResolver: partialResolver(templatesDir.resolve('_partials')));
+  String content = await file.readAsString();
+  return Template(content,
+      partialResolver: createPartialResolver(directory.resolve('_partials')));
 }
 
 /// Saves the generated HTML file in the public directory.
@@ -89,7 +82,7 @@ Future<File> createHtmlFile(Uri srcFile, publicDir, {String content}) async {
 ///
 /// Recursively searches the `_partials` directory for a file
 /// that matches the partial [name].
-Function(String name) partialResolver(Uri partialsDir) {
+Function(String name) createPartialResolver(Uri partialsDir) {
   return (String name) {
     var directory = Directory.fromUri(partialsDir);
     if (!directory.existsSync()) {

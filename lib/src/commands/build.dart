@@ -36,7 +36,6 @@ class BuildCommand extends Command {
       logger.stderr(logger.ansi.error(e.toString()));
     } on TotaIOException catch (e) {
       logger.stderr(logger.ansi.error('${e.message}: ${e.path}'));
-      throw "Failed";
     } on TotaException catch (e) {
       logger.stderr(logger.ansi.error(e.message));
     } catch (e) {
