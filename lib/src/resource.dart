@@ -186,7 +186,7 @@ String _resolveTemplateForType(ResourceType type, Config config) {
           p.basenameWithoutExtension(config.postsPath), _mustacheFileExtension);
     default:
       return p.setExtension(
-          p.basenameWithoutExtension(config.postsPath), _mustacheFileExtension);
+          p.basenameWithoutExtension(config.pagesPath), _mustacheFileExtension);
   }
 }
 
