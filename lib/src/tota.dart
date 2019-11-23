@@ -31,8 +31,13 @@ Future<void> createProject(Uri directory) async {
 ///
 /// The default [type] of resource to create is "page". Will throw an
 /// exception if file already exists, but [force] will override this.
-Future<void> createPage(ResourceType type, String title,
-    {@required Config config, bool force = false, Logger logger}) async {
+Future<void> createPage(
+  ResourceType type,
+  String title, {
+  @required Config config,
+  bool force = false,
+  Logger logger,
+}) async {
   logger ??= Logger.standard();
 
   Progress progress = logger.progress('Generating file');

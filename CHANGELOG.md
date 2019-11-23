@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Dependency on dotenv package
 
+### Changed
+
+- Generated dates by `new` command to `YYYY-MM-DD` format.
+
 ## [0.6.0] - 2019-07-16
 
 ### Added

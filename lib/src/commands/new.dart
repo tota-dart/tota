@@ -40,8 +40,13 @@ class NewCommand extends Command {
         throw TotaException('Title is required');
       }
 
-      await createPage(_parseResourceType(argResults['type']), title,
-          config: config, force: argResults['force'], logger: logger);
+      await createPage(
+        _parseResourceType(argResults['type']),
+        title,
+        config: config,
+        force: argResults['force'],
+        logger: logger,
+      );
 
       logger.stdout('File ${logger.ansi.emphasized('created')}.');
     } on TotaIOException catch (e) {
