@@ -1,6 +1,5 @@
 import 'package:args/command_runner.dart';
 import 'package:cli_util/cli_logging.dart';
-import 'package:dotenv/dotenv.dart' as dotenv;
 
 import '../../tota.dart';
 import '../config.dart';
@@ -30,8 +29,6 @@ class NewCommand extends Command {
 
   @override
   void run() async {
-    dotenv.load();
-
     Logger logger =
         argResults['verbose'] ? Logger.verbose() : Logger.standard();
 
@@ -43,8 +40,13 @@ class NewCommand extends Command {
         throw TotaException('Title is required');
       }
 
-      await createPage(_parseResourceType(argResults['type']), title,
-          config: config, force: argResults['force'], logger: logger);
+      await createPage(
+        _parseResourceType(argResults['type']),
+        title,
+        config: config,
+        force: argResults['force'],
+        logger: logger,
+      );
 
       logger.stdout('File ${logger.ansi.emphasized('created')}.');
     } on TotaIOException catch (e) {

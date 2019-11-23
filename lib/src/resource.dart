@@ -50,8 +50,12 @@ class Resource {
 }
 
 /// Scaffolds a new page file with desired [title].
-Future<Resource> createResource(ResourceType type, String title,
-    {@required Config config, bool force}) async {
+Future<Resource> createResource(
+  ResourceType type,
+  String title, {
+  @required Config config,
+  bool force,
+}) async {
   Uri sourceDir = type == ResourceType.post ? config.postsDir : config.pagesDir;
   // Slugify title to create a file name.
   var filename = p.setExtension(Slugify(title), '.md');
@@ -59,7 +63,7 @@ Future<Resource> createResource(ResourceType type, String title,
   var today = DateTime.now();
   var metadata = <String, dynamic>{
     'title': title,
-    'date': DateFormat(config.dateFormat).format(today),
+    'date': DateFormat('yyyy-MM-dd').format(today),
     'template': 'base',
     'public': false,
   };

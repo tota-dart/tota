@@ -1,4 +1,5 @@
-import 'package:dotenv/dotenv.dart' as dotenv;
+import 'dart:io';
+
 import 'package:markdown/markdown.dart';
 
 import 'exceptions.dart';
@@ -14,15 +15,18 @@ String createFrontMatter(Map<String, dynamic> data) {
   return "---\n${fm.join('\n')}\n---";
 }
 
-/// Gets environment variable with [prefix].
-String getenv(String key,
-    {String fallback,
-    String prefix = 'TOTA_',
-    bool isRequired = true,
-    bool isDirectory = false}) {
-  var value = dotenv.env['$prefix$key'] ?? fallback;
+/// Gets an environment variable.
+String getenv(
+  String key, {
+  String fallback,
+  String prefix = 'TOTA_',
+  bool isRequired = true,
+  bool isDirectory = false,
+}) {
+  var envName = '$prefix$key';
+  var value = Platform.environment[envName] ?? fallback;
   if (isRequired && value == null) {
-    throw TotaException('config not set: `$prefix$key`');
+    throw TotaException('config not set: `$envName`');
   }
   // Add a trailing slash to directories.
   if (isDirectory && !value.endsWith('/')) {
