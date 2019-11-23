@@ -51,12 +51,16 @@ class Config {
             getenv('TEMPLATES_DIR', fallback: 'templates', isDirectory: true),
         assetsPath =
             getenv('ASSETS_DIR', fallback: 'assets', isDirectory: true),
-        url = getenv('URL'),
-        title = getenv('TITLE'),
-        description = getenv('DESCRIPTION'),
-        author = getenv('AUTHOR'),
+        url = getenv('URL', fallback: 'https://tota.dev'),
+        title = getenv('TITLE', fallback: 'Tota Site'),
+        description = getenv(
+          'DESCRIPTION',
+          fallback:
+              'Site built by Tota static-site generator - https://tota.dev',
+        ),
+        author = getenv('AUTHOR', fallback: 'Unknown'),
         language = getenv('LANGUAGE', fallback: 'en'),
-        dateFormat = getenv('DATE_FORMAT', fallback: 'YYYY-MM-DD'),
+        dateFormat = getenv('DATE_FORMAT', fallback: 'yMMMd'),
         permalink = getenv('PERMALINK', isRequired: false),
         netlifySite = getenv('NETLIFY_SITE', isRequired: false),
         netlifyToken = getenv('NETLIFY_TOKEN', isRequired: false);

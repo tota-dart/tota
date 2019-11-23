@@ -1,6 +1,5 @@
 import 'package:args/command_runner.dart';
 import 'package:cli_util/cli_logging.dart';
-import 'package:dotenv/dotenv.dart' as dotenv;
 import 'package:mustache/mustache.dart';
 import 'package:tota/src/exceptions.dart';
 
@@ -21,8 +20,6 @@ class BuildCommand extends Command {
 
   @override
   void run() async {
-    dotenv.load();
-
     Logger logger =
         argResults['verbose'] ? Logger.verbose() : Logger.standard();
 
