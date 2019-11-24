@@ -76,8 +76,11 @@ Future<Resource> createResource(
 }
 
 /// Compiles the files in the pages directory.
-Future<List<Resource>> compileResources(ResourceType type,
-    {@required Config config, Logger logger}) async {
+Future<List<Resource>> compileResources(
+  ResourceType type, {
+  @required Config config,
+  Logger logger,
+}) async {
   var compiled = <Resource>[];
   Uri sourceDir = type == ResourceType.post ? config.postsDir : config.pagesDir;
 
@@ -156,8 +159,13 @@ Future<List<Resource>> compileResources(ResourceType type,
 }
 
 // Creates an archive file from list of posts.
-Future<File> _createArchiveFile(Uri uri, List<Resource> posts,
-    {@required Config config, Logger logger, String tag}) async {
+Future<File> _createArchiveFile(
+  Uri uri,
+  List<Resource> posts, {
+  @required Config config,
+  Logger logger,
+  String tag,
+}) async {
   // Create template locals.
   Map<String, dynamic> locals = {
     'site': config.siteJson(),
@@ -198,8 +206,11 @@ String _resolveTemplateForType(ResourceType type, Config config) {
 ///
 /// If [template] is not found, tries to load the [fallback] template,
 /// before eventually loading the base template as last resort.
-Future<Template> _resolveTemplate(String path, Uri directory,
-    {String fallback}) async {
+Future<Template> _resolveTemplate(
+  String path,
+  Uri directory, {
+  String fallback,
+}) async {
   for (var file in <String>[path, fallback]) {
     try {
       if (file != null) {
@@ -216,8 +227,11 @@ Future<Template> _resolveTemplate(String path, Uri directory,
 }
 
 /// Creates a posts archive page.
-Future<void> createPostArchive(List<Resource> posts,
-    {@required Config config, Logger logger}) async {
+Future<void> createPostArchive(
+  List<Resource> posts, {
+  @required Config config,
+  Logger logger,
+}) async {
   if (posts.isEmpty) {
     return;
   }
@@ -226,13 +240,20 @@ Future<void> createPostArchive(List<Resource> posts,
 
   // Create the archive page in the posts public directory.
   Uri publicPostsDir = config.publicDir.resolve(config.postsPath);
-  await _createArchiveFile(publicPostsDir.resolve('index.html'), posts,
-      config: config, logger: logger);
+  await _createArchiveFile(
+    publicPostsDir.resolve('index.html'),
+    posts,
+    config: config,
+    logger: logger,
+  );
 }
 
 /// Creates archive pages for all tags used.
-Future<void> createTagArchives(List<Resource> resources,
-    {@required config, Logger logger}) async {
+Future<void> createTagArchives(
+  List<Resource> resources, {
+  @required config,
+  Logger logger,
+}) async {
   Set<String> tags = resources
       .map((resource) => resource.tags)
       .expand((tags) => tags)
@@ -246,7 +267,12 @@ Future<void> createTagArchives(List<Resource> resources,
     // Sort posts by date (newest first).
     posts.sort((a, b) => a.date.compareTo(b.date));
     var tagUri = config.publicDir.resolve('tags/$tag.html');
-    await _createArchiveFile(tagUri, posts,
-        config: config, logger: logger, tag: tag);
+    await _createArchiveFile(
+      tagUri,
+      posts,
+      config: config,
+      logger: logger,
+      tag: tag,
+    );
   }
 }

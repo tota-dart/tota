@@ -20,7 +20,7 @@ Future<void> createProject(Uri directory) async {
   if (await dir.exists()) {
     var dirents = await dir.list().toList();
     if (dirents.isNotEmpty) {
-      throw TotaIOException(directory.toFilePath(), 'Directory not empty');
+      throw TotaIOException(directory.toFilePath(), 'Directory is not empty');
     }
   }
 
@@ -62,13 +62,9 @@ Future<void> compile(Config config, {Logger logger}) async {
       await compileResources(ResourceType.post, config: config, logger: logger);
   progress.finish(showTiming: true);
 
-  // Create posts archive page.
+  // Create archive pages.
   logger.stdout('Creating archive pages');
-  await createPostArchive(
-    posts,
-    config: config,
-    logger: logger,
-  );
+  await createPostArchive(posts, config: config, logger: logger);
   await createTagArchives(posts, config: config, logger: logger);
 
   // Copy assets directory to public directory.

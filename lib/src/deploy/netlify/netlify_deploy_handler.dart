@@ -16,8 +16,10 @@ class NetlifyDeployHandler implements DeployHandler {
   NetlifyDeployHandler(this._client);
 
   /// Builds a list of files in a [directory] with digests.
-  Future<List<NetlifyFile>> _createDigest(Uri directory,
-      {Logger logger}) async {
+  Future<List<NetlifyFile>> _createDigest(
+    Uri directory, {
+    Logger logger,
+  }) async {
     logger ??= Logger.standard();
     var files = <NetlifyFile>[];
     await for (FileSystemEntity entity

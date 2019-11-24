@@ -80,12 +80,15 @@ class NetlifyDeploy {
   }
 
   /// Uploads all [files] to Netlify.
-  Future<List<NetlifyFile>> uploadAll(List<NetlifyFile> files,
-      {Logger logger}) async {
+  Future<List<NetlifyFile>> uploadAll(
+    List<NetlifyFile> files, {
+    Logger logger,
+  }) async {
     if (!hasId) {
       throw NetlifyException('Deploy ID not set');
     }
     return await Future.wait(
-        files.map((file) => _uploadSingle(file, logger: logger)));
+      files.map((file) => _uploadSingle(file, logger: logger)),
+    );
   }
 }
