@@ -18,10 +18,4 @@ Future<void> clone(Uri targetUri) async {
   if (await gitDir.exists()) {
     await gitDir.delete(recursive: true);
   }
-
-  // Create config file from example.
-  var file = File.fromUri(targetUri.resolve('.env.example'));
-  if (await file.exists()) {
-    await file.rename(targetUri.resolve('.env').toFilePath());
-  }
 }
