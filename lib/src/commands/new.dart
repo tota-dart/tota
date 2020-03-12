@@ -15,7 +15,7 @@ class NewCommand extends Command {
   NewCommand() {
     argParser.addOption('type',
         allowed: ['page', 'post'],
-        defaultsTo: 'pages',
+        defaultsTo: 'page',
         abbr: 't',
         help: 'Type of page to create.');
     argParser.addFlag('verbose',

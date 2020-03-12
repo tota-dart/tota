@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.2] - 2020-03-12
+
+### Fixed
+
+- Caught request errors when creating deploy on Netlify
+- Fix page type option on new command
+
 ## [0.6.1] - 2019-11-23
 
 ### Removed

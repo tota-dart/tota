@@ -6,7 +6,7 @@ export 'src/commands/new.dart';
 export 'src/commands/deploy.dart';
 
 final String title = 'Tota';
-final String docsUrl = 'https://TODO/docs';
+final String docsUrl = 'https://tota.dev/docs';
 final String description = """
 Tota is a simple and elegant static site generator.
 

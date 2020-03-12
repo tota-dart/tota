@@ -77,8 +77,11 @@ Future<void> compile(Config config, {Logger logger}) async {
 }
 
 /// Deploys site to [host].
-Future<void> deploy(DeployHost host,
-    {@required Config config, Logger logger}) async {
+Future<void> deploy(
+  DeployHost host, {
+  @required Config config,
+  Logger logger,
+}) async {
   DeployHandler handler = createDeployHandler(host, config);
   await handler.deploy(config.publicDir, logger: logger);
 }

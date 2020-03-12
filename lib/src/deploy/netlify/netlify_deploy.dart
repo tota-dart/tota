@@ -60,10 +60,11 @@ class NetlifyDeploy {
   Future<void> create({Logger logger}) async {
     logger ??= Logger.standard();
     var response = await client.createDeploy(toJson());
-    var body = json.decode(response.body);
     if (response.statusCode != 200) {
-      throw NetlifyException('Failed to create deploy');
+      throw NetlifyException(
+          'Failed to create Netlify deploy (${response.statusCode})');
     }
+    var body = json.decode(response.body);
     this.id = body['id'];
     this.requiredFiles = List<String>.from(body['required']);
     if (body['required_functions'] != null) {

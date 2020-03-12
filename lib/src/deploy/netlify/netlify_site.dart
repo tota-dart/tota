@@ -17,7 +17,6 @@ class NetlifySite {
   /// Retrieves a site from Netlify API.
   Future<NetlifySite> retrieve() async {
     var response = await client.retrieveSite();
-    var body = json.decode(response.body);
     switch (response.statusCode) {
       case 200:
         break;
@@ -26,6 +25,7 @@ class NetlifySite {
       default:
         throw NetlifyException('Site not found');
     }
+    var body = json.decode(response.body);
     this.id = body['id'];
     return this;
   }
